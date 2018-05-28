@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>个人信息维护</title>
+<script  type="text/javascript" src="../../../RESTon.js"></script>
+<style type="text/css">
+.notEdit .textbox{border:0;border-radius:0;border-bottom:1px dashed #95b8e7;background:none;}
+.notEdit .textbox .textbox-text{background:none;}
+#userinfo label{width:150px;}
+</style>
+</head>
+<body >
+  <div class="easyui-panel" data-options="fit:true,border:false">
+    <form id="userinfo" class="forminput" style="margin:20px;width:540px;">
+      <table>
+        <tr>
+          <td><label>用户ID：</label></td>
+          <td class="notEdit">
+            <input id="ALOGINID" name="ALOGINID" class="easyui-textbox" readonly />
+            <a class="easyui-linkbutton"  style="width: 100px;margin:0 30px;" data-options="iconCls:'icon-edit',auth:{authid:'o_s_updpassword',type:'disable'}" onClick="modifyPassword()">修改密码</a>
+          </td>
+        </tr>
+        <tr>
+          <td><label>姓名：</label></td>
+          <td class="notEdit"><input name="ANAME" class="easyui-textbox" readonly /></td>
+        </tr>
+        <tr>
+          <td><label>性别：</label></td>
+          <td class="notEdit"><input name="ASEX" class="easyui-combobox" readonly data-options="dict:'aSex',hasDownArrow:false" /></td>
+        </tr>
+        <tr>
+          <td><label>注册类型：</label></td>
+          <td class="notEdit"><input name="AUSERTYPE" class="easyui-combobox" readonly data-options="dict:'aUserType',hasDownArrow:false" /></td>
+        </tr>
+        <tr>
+          <td><label>角色：</label></td>
+          <td class="notEdit">
+            <select id="role" class="easyui-combobox" name="role" readonly data-options="hasDownArrow:false,readonly:true" style="width: 80%; height: 24px;line-height: 24px" /></select>
+          </td>
+        </tr>
+        <tr>
+          <td><label>电话：</label></td>
+          <td><input name="ATEL" class="easyui-textbox" validType="phone" data-options="required:true" style="width: 80%;" /></td>
+        </tr>
+        <tr>
+          <td><label>当前住址：</label></td>
+          <td><input name="ALOCALADDRESS" class="easyui-textbox" validType="maxLength[80]" data-options="required:true" style="width: 80%;" /></td>
+        </tr>
+
+      </table>
+      <div style="width:540px;margin-top:20px; text-align: center;">
+        <a class="easyui-linkbutton"   style="width:60px" data-options="iconCls:'icon-save',auth:{authid:'o_s_save',type:'disable'}" onClick="saveInfo()">保存</a>
+        <a class="easyui-linkbutton"  style="margin-left:30px;width:60px" data-options="iconCls:'icon-undo',auth:{authid:'o_s_reset',type:'hide'}" onClick="cancelInfo()">重置</a>
+      </div>
+    </form>
+  </div>
+  <div id="passwordWin" class="easyui-window" data-options="width:320,height:230,title:'密码修改',closed:true,collapsible:false,minimizable:false,maximizable:false" >
+    <form id="passwordForm" class="forminput" style="margin:20px;">
+      <table>
+        <tr>
+          <td align="right">原密码：</td>
+          <td><input id="PASSWORD_OLD" name="PASSWORD_OLD" type="password" class="easyui-textbox" data-options="required:true"/></td>
+        </tr>
+        <tr>
+          <td align="right">新密码：</td>
+          <td><input id="PASSWORD_NEW" name="PASSWORD_NEW" type="password" class="easyui-textbox" data-options="required:true,validType:'password'" /></td>
+        </tr>
+        <tr>
+          <td align="right">确认新密码：</td>
+          <td><input name="repeatPASSWORD_NEW" type="password" class="easyui-textbox" validType="same['#PASSWORD_NEW']" data-options="required:true" /></td>
+        </tr>
+      </table>
+    </form>
+    <div style="margin-top: 10px; text-align: center;">
+      <a class="easyui-linkbutton" style="width: 60px" data-options="iconCls:'icon-save'" onClick="commitPass()">修改</a>
+    </div>
+  </div>
+  <script type="text/javascript" src="../../../tbmp/js/validator.js"></script>
+  <script>
+      $(function() {
+        $('#role').combobox({
+          valueField : 'id',
+          textField : 'text',
+          multiple : true,
+          multiline : true,
+          editable : false,
+          url : '../../../reston/auth/role_list.jjs',
+        });
+        init();
+      });
+      function init(){
+        var user = getUser(RESTon.get("User").id);
+        var detail = user.detail;
+        $('#role').combobox('setValues', user.role);
+        if (user.dept)
+          $('#AORGNAME').combotree('setValue', user.dept.AORGID);
+        $('#userinfo').form('load', detail);
+      }
+      function getUser(loginid) {
+        var result = {};
+        $.ajax({
+          url : "../../../reston/common/user/detailUser.jjs",
+          type : "post",
+          data : {ALOGINID : loginid },
+          async : false,
+          dataType : "json",
+          success : function(data) {
+            result = data;
+          },
+          error : function(xhr, status, msg) {
+            alert("错误：" + msg);
+          }
+        });
+        return result;
+      }
+      function saveInfo(){
+        if(!$('#userinfo').form('validate')) return;
+        var infoData=$('#userinfo').serializeObject();
+        $.messager.confirm('确认', '确认保存修改信息？', function(b) {
+          if(b){
+            $.ajax({
+              url : "../../../reston/common/user/selfUpdateUser.jjs",
+              type : "post",
+              data : infoData,
+              async : false,
+              dataType : "json",
+              success : function(data) {
+                if(data.result="success"){
+                  $.messager.show({title : '提醒',msg : '操作成功。',timeout : 3000,showType : 'slide'});
+                }else{
+                  $.messager.show({title : '提醒',msg : '操作失败。',timeout : 3000,showType : 'slide'});
+                }
+              },
+              error : function(xhr, status, msg) {
+                alert("错误：" + msg);
+              }
+            });
+          }
+        })
+      }
+      function cancelInfo(){
+        init();
+      }
+      function modifyPassword() {
+        $('#PASSWORD_OLD').textbox('setValue','');
+        $('#PASSWORD_NEW').textbox('setValue','');
+        $('#passwordWin').window('open');
+      }
+      
+      function commitPass(){
+        if(!$('#passwordForm').form('validate')) return;
+        var data=$('#passwordForm').serializeObject();
+        data.ALOGINID=RESTon.get("User").id; 
+        $.messager.confirm('确定修改', '你确定修改密码？', function(b) {
+          if(b){
+            $.ajax({
+              url : "../../../reston/common/user/modifyPwd.jjs",
+              type : "post",
+              data : data,
+              async : false,
+              dataType : "json",
+              success : function(data) {
+                if(data.result=="success"){
+                  $.messager.alert('消息','修改成功！','info');  
+                  $('#passwordWin').window('close');      
+                }else{
+                  $.messager.alert('消息','原始密码错误！','info');
+                }
+              },
+              error : function(xhr, status, msg) {
+                alert("错误：" + msg);
+              }
+            });
+          }
+        });
+      }
+    </script>
+</body>
+</html>

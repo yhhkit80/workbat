@@ -1,0 +1,71 @@
+[{
+  "id" : "sales01",
+  "text" : "基础数据",
+  "state": "closed",
+  "children": [{
+    "id" : "sales0101",
+    "text" : "经销商申请",
+    "url" : "../../sales/index.html"
+  },{
+    "id" : "sales0102",
+    "text" : "经销商维护",
+    "url" : ""
+  },{
+    "id" : "sales0103",
+    "text" : "二手车评估报告管理",
+    "url" : ""
+  },{
+    "id" : "sales0104",
+    "text" : "工作日历",
+    "url" : ""
+  },{
+    "id" : "sales0105",
+    "text" : "经销商审批人员维护",
+    "url" : ""
+  },{
+    "id" : "sales0106",
+    "text" : "销售计划",
+    "url" : ""
+  },{
+    "id" : "sales0107",
+    "text" : "促销品管理",
+    "url" : ""
+  },{
+    "id" : "sales0108",
+    "text" : "根据大类浏览大类测试页面",
+    "url" : ""
+  },{
+    "id" : "sales0109",
+    "text" : "根据大类浏览大类测试页面",
+    "url" : ""
+  },{
+    "id" : "sales0110",
+    "text" : "店面收款方维护",
+    "url" : ""
+  },{
+    "id" : "sales0111",
+    "text" : "经销商信息维护",
+    "url" : ""
+  },{
+    "id" : "sales0112",
+    "text" : "保证金查询",
+    "url" : ""
+  }]
+},{
+  "id" : "sales02",
+  "text" : "产品中心",
+  "state" : "closed",
+  "children": [{
+    "id" : "sales0201",
+    "text" : "融资项目",
+    "url" : ""
+  },{
+    "id" : "sales0202",
+    "text" : "特殊利率",
+    "url" : ""
+  }]
+},{
+  "id" : "sales03",
+  "text" : "进件管理",
+  "url" : ""
+}]

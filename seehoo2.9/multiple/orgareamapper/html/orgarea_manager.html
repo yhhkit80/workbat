@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>机构城市定义</title>
+<script type="text/javascript" src="../../../RESTon.js"></script>
+<script type="text/javascript" src="../js/orgarea_manager.js"></script>
+<style>
+  .layout-panel-center .panel-title,.layout-panel-east .panel-title{border-left:1px solid #95b8e7;}
+  #role_list .tree-icon{background:url('../images/user.png') no-repeat center center}
+  #func_list .tree-icon{background:url('../images/single_people.gif') no-repeat center center}
+</style>
+<script>
+  var SelectRole;
+//   $(function() {
+    
+//     $('#role_list').tree({
+//       url : '../../../reston/auth/role_list.jjs',
+//       onSelect : function(node) {
+//         SelectRole = node.id;
+//         $.ajax({
+//           type : "POST",
+//           url : "../../../reston/auth/role_func.jjs",
+//           data : {
+//             role : node.id
+//           },
+//           success : function(data) {
+//             $('#func_list').tree("loadData", data);
+//             previewAuths();
+//           }
+//         });
+//       },
+//       onContextMenu : function(e, node) {
+//         e.preventDefault();
+//         // 查找节点
+//         $('#role_list').tree('select', node.target);
+//         // 显示快捷菜单
+//         $('#list_contextmenu').menu('show', {
+//           left : e.pageX,
+//           top : e.pageY
+//         });
+//       }
+//       /*,
+//       onAfterEdit : function(node) {
+//         $.ajax({
+//           type : "POST",
+//           url : "../../../reston/auth/role_update.jjs",
+//           data : {
+//             id : node.id,
+//             name : node.text
+//           }
+//         });
+//       }*/
+//     });
+//     $('#func_list').tree({
+//       checkbox : true,
+//       onCheck : previewAuths
+//     });
+//     $('#auth_tree').tree({
+//       url : '../../../reston/auth/auth.jjs',
+//       checkbox : true,
+//       lines : true,
+//       onBeforeSelect : function(node) {
+//         return false;
+//       },
+//       onLoadSuccess:function(){
+//         $('#auth_tree .tree-checkbox').click(function(){
+//           return false
+//         })
+//       }
+//     });
+//   });
+  function previewAuths() {
+    var nodes = $('#func_list').tree("getChecked", "checked");
+    var auths = {};
+    for (var i = 0; i < nodes.length; i++) {
+      var node = nodes[i];
+      for ( var index in node.auths)
+        auths[node.auths[index]] = true;
+    }
+    var rescheck = $('#auth_tree').tree("getChecked", "checked");
+    for (var i = 0; i < rescheck.length; i++) {
+      var id = rescheck[i].id;
+      var node = $('#auth_tree').tree("find", id);
+      $('#auth_tree').tree("uncheck", node.target);
+    }
+    for ( var auth in auths) {
+      var node = $('#auth_tree').tree("find", auth);
+      var isLeaf = $('#auth_tree').tree("isLeaf", node.target);
+      if (isLeaf)
+        $('#auth_tree').tree("check", node.target);
+    }
+  }
+//   function role_add() {
+//     $.ajax({
+//       type : "POST",
+//       url : "../../../reston/auth/role_add.jjs",
+//       complete : function(data) {
+//         $.ajax({
+//           type : "POST",
+//           url : "../../../reston/auth/role_list.jjs",
+//           success : function(data) {
+//             $('#role_list').tree("loadData", data);
+//           }
+//         });
+//       }
+//     });
+//   }
+  function role_update() {
+    var node = $('#role_list').tree('getSelected');
+    $('#rolename').val(node.text);
+    $('#roleid').val(node.id);
+    $.ajax({
+      type : "POST",
+      data:{aRoleId:node.id},
+      url : "../../../reston/auth/role_view.jjs",
+      success : function(data) {
+        $("#position").combobox('setValues',data.position);
+        $("#dataauth").combobox('setValues',data.dataauth);
+      }
+    });
+    $("#update").window('open');
+  }
+  function role_remove() {
+    var node = $('#role_list').tree('getSelected');
+    if (!confirm("确认删除 " + node.text + " 么？"))
+      return;
+    $.ajax({
+      type : "POST",
+      url : "../../../reston/auth/role_delete.jjs",
+      data : {
+        role : node.id
+      },
+      complete : function(data) {
+        $.ajax({
+          type : "POST",
+          url : "../../../reston/auth/role_list.jjs",
+          success : function(data) {
+            $('#role_list').tree("loadData", data);
+          }
+        });
+      }
+    });
+  }
+  function role_func_update() {
+    if(!$('#func_list').tree("getChecked", "checked")) return;
+    var nodes = $('#func_list').tree("getChecked", "checked");
+    var nodeids = [];
+    for (var index = 0; index < nodes.length; index++)
+      nodeids.push(nodes[index].id);
+    $.ajax({
+      type : "POST",
+      url : "../../../reston/auth/role_func_update.jjs",
+      data : {
+        role : SelectRole,
+        funcs : nodeids
+      },
+      complete : function(data) {
+        $.ajax({
+          type : "POST",
+          url : "../../../reston/auth/role_list.jjs",
+          success : function(data) {
+            $('#role_list').tree("loadData", data);
+          }
+        });
+      }
+    });
+  }
+  function commit(){
+    var position=$("#position").combobox('getValues');
+    var dataauth=$("#dataauth").combobox('getValues');
+    $.ajax({
+      type : "POST",
+      url : "../../../reston/auth/role_update.jjs",
+      data : {
+        roleid : $("#roleid").val(),
+        rolename:$("#rolename").val(),
+        position :position,
+        dataauth:dataauth
+      },
+      success : function(data) {
+        $("#update").window('close');
+      }
+    });
+  }
+  
+</script>
+</head>
+<body class="easyui-layout" data-options="fit:true">
+ <div data-options="region:'west',title:'组织机构',border:false" style="width: 33%;">
+    <ul id="org_tree" style="margin:10px;"></ul>
+  </div>
+  <div data-options="region:'center','title':'机构详情',border:false" style="border-left:1px solid #95b8e7;width: 33%;">
+    <form class="forminput" id="detailForm" method="post">
+      <tr>
+        <td align="right">机构类型：</td>
+        <td><input name="AORGTYPE" class="easyui-textbox" data-options="readonly:true"></input></td>
+      </tr>
+    </form>
+  </div>
+  <div data-options="region:'east',title:'区域定义',border:false" style="width: 33%;border-left:1px solid #95b8e7;">
+    <div data-options="region:'north',border:false" style="height:35px;">
+        <a id="save_button" onClick="org_area_update()" class="easyui-linkbutton" iconCls="icon-save" style="margin-left:30px;margin-top:5px;">保存区域</a>
+    </div>
+    <div data-options="region:'center',border:false">
+      <ul id="area_tree" class="easyui-tree" style="margin:10px;"></ul>
+    </div>
+  </div>
+  <div id="list_contextmenu" class="easyui-menu" style="width: 120px;">
+    <div onclick="role_update()" data-options="iconCls:'icon-edit',auth:{authid:'o_r_updrole',type:'disable'}">编辑</div>
+    <div onclick="role_view()" data-options="iconCls:'icon-edit'">查看</div>
+    <div onclick="role_remove()" data-options="iconCls:'icon-remove',auth:{authid:'o_r_updrole',type:'hide'}">移除</div>
+  </div>
+  <div id="update" class="easyui-window" title="编辑" data-options="width:600,height:400,modal:true,closed:true">
+    <table>
+    <tr><td>角色名称：<input id="rolename"/><input id="roleid" type="hidden" ></td></tr>
+    <tr>
+      <td>职&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;位：<input id="position" class="easyui-combobox" data-options="dict:'aPosition',multiple:true,width:500,height:100"></td>
+      
+    </tr>
+    <tr><td>数据权限：<input id="dataauth" class="easyui-combobox" data-options="dict:'aDataAuth',multiple:true,width:500,height:100"></td></tr>
+    </table>
+    <a id="commit" onClick="commit()" class="easyui-linkbutton" >确认</a>
+    <a id="cancle" onClick="cancle()" class="easyui-linkbutton" >取消</a>
+  </div>
+</body>
+</html>

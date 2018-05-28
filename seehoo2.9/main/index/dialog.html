@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>弹窗页</title>
+</head>
+<body>
+  <form id="dialogForm" class="forminput">
+    <table>
+      <tr>
+        <td class="labeltd">编号</td>
+        <td class="datatd"><input class="easyui-textbox" name="ID" /></td>
+        <td class="labeltd">任务名称</td>
+        <td class="datatd"><input class="easyui-textbox" name="TASKNAME" /></td>
+      </tr>
+      <tr>
+        <td class="labeltd">节点名称</td>
+        <td class="datatd"><input class="easyui-textbox" name="NODENAME" /></td>
+        <td class="labeltd">待办任务数量</td>
+        <td class="datatd"><input class="easyui-numberbox" name="TASKNUM" /></td>
+      </tr>
+      <tr>
+        <td class="labeltd">任务创建时间起</td>
+        <td class="datatd"><input class="easyui-datebox" name="startDate" /></td>
+        <td class="labeltd">任务创建时间起</td>
+        <td class="datatd"><input class="easyui-datebox" name="endDate" /></td>
+      </tr>
+      <tr>
+        <td class="labeltd">是否</td>
+        <td class="datatd"><input class="easyui-combobox" name="yesOrNo"
+        data-options="editable:false,panelHeight:'auto',panelMaxHeight:150,
+        valueField:'id',textField:'text',
+        data:[{id:'',text:'请选择...',selected:true},{id:1,text:'是'},{id:2,text:'否'}]"/></td>
+        <td class="datatd" colspan="2">
+        </td>
+      </tr>
+    </table>
+  </form>
+</body>
+</html>

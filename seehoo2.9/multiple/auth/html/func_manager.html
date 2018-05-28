@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>职能定义</title>
+<script type="text/javascript" src="../../../RESTon.js"></script>
+<style>
+  .layout-panel-center .panel-header-noborder{border-left:1px solid #95b8e7;}
+   #func_list .tree-icon{background:url('../images/single_people.gif') no-repeat center center}
+.tree-node {
+  vertical-align: top;
+  height: 18px;
+  line-height:18px;
+}
+.tree-title {
+  vertical-align: top;
+  line-height: 18px;
+  margin-left:0px;
+}
+.tree-node-selected {
+  line-height:18px;
+}
+.easyui-tree li .tree-file, .common-tree li .tree-file,.tree-folder {
+  margin-top:0px;   
+}
+</style>
+<script>
+  var SelectFunc;
+  $(function() {
+    $('#func_list').tree({
+      url : '../../../reston/auth/func_list.jjs',
+      onSelect : function(node) {
+        SelectFunc=node.id;
+        $.ajax({
+          type : "POST",
+          url : "../../../reston/auth/func_auth.jjs",
+          data : {
+            func : node.id
+          },
+          success : function(data) {
+            $('#auth_tree').tree("loadData", data);
+          }
+        });
+      },
+      onContextMenu : function(e, node) {
+        e.preventDefault();
+        // 查找节点
+        $('#func_list').tree('select', node.target);
+        // 显示快捷菜单
+        $('#list_contextmenu').menu('show', {
+          left : e.pageX,
+          top : e.pageY
+        });
+      },
+      onAfterEdit:function(node){
+        $.ajax({
+          type : "POST",
+          url : "../../../reston/auth/func_update.jjs",
+          data : {
+            id : node.id,
+            name:node.text
+          }
+        });
+      }
+    });
+    $('#auth_tree').tree({
+      cascadeCheck:false,
+      checkbox : true,
+      lines : true,
+      onCheck : function(node) {
+        var text = node.text;
+        text = text.replace(/( \*)*$/, " *");
+        $('#auth_tree').tree("update", {
+          target : node.target,
+          text : text
+        });
+      }
+    });
+  });
+  function func_add(){
+    $.ajax({
+      type:"POST",
+      url:"../../../reston/auth/func_add.jjs",
+      complete:function(data){
+        $.ajax({
+          type : "POST",
+          url : "../../../reston/auth/func_list.jjs",
+          success : function(data) {
+            $('#func_list').tree("loadData", data);
+          }
+        });
+      }
+    });
+  }
+  function func_update(){
+    var node = $('#func_list').tree('getSelected');
+    $('#func_list').tree('beginEdit',node.target);
+  }
+  function func_remove() {
+    var node = $('#func_list').tree('getSelected');
+    if(!confirm("确认删除 "+node.text+" 么？"))return;
+    $.ajax({
+      type:"POST",
+      url:"../../../reston/auth/func_delete.jjs",
+      data:{
+        func:node.id
+      },
+      complete:function(data){
+        $.ajax({
+          type : "POST",
+          url : "../../../reston/auth/func_list.jjs",
+          success : function(data) {
+            $('#func_list').tree("loadData", data);
+          }
+        });
+      }
+    });
+  }
+  function func_auth_update(){
+    if(!$('#auth_tree').tree("getChecked", "checked")) return;
+    var nodes=$('#auth_tree').tree("getChecked", "checked");
+    if(nodes.length==0) return;
+    var hash={};
+    var nodeids=[];
+    for(var index=0;index<nodes.length;index++){
+      var node=nodes[index];
+      var id=node.id;
+      hash[id]=true;
+      (function(node,hash){
+        var p=$('#auth_tree').tree("getParent",node.target);
+        if(!p)return;
+        hash[p.id]=true;
+        arguments.callee(p,hash);
+      })(node,hash);
+    }
+    for(var id in hash)
+      nodeids.push(id);
+    $.ajax({
+      type:"POST",
+      url:"../../../reston/auth/func_auth_update.jjs",
+      data:{
+        func:SelectFunc,
+        auths:nodeids
+      },
+      complete:function(data){
+        $.ajax({
+          type : "POST",
+          url : "../../../reston/auth/func_list.jjs",
+          success : function(data) {
+            $('#func_list').tree("loadData", data);
+          }
+        });
+      }
+    });
+  }
+</script>
+</head>
+<body class="easyui-layout" data-options="fit:true,border:false">
+  <div data-options="region:'west',title:'职能定义',collapsible:false,border:false" style="width: 50%;">
+    <div class="easyui-layout" data-options="fit:true,border:false">
+      <div data-options="region:'north',border:false" style="height:35px;">
+        <a id="add_button" onClick="func_add()" class="easyui-linkbutton" iconCls="icon-add" style="margin-left:30px;margin-top:5px;">增加职能</a>
+      </div>
+      <div data-options="region:'center',border:false">
+        <ul id="func_list" style="margin:10px;"></ul>
+      </div>
+    </div>
+  </div>
+  <div data-options="region:'center',title:'权限配置',border:false" style="border-left:1px solid #95b8e7;">
+    <div class="easyui-layout" data-options="fit:true,border:false">
+      <div data-options="region:'north',border:false" style="height:35px;">
+        <a id="save_button" onClick="func_auth_update()" class="easyui-linkbutton" iconCls="icon-save" style="margin-left:30px;margin-top:5px;">保存权限</a>
+      </div>
+      <div data-options="region:'center',border:false">
+        <ul id="auth_tree" style="margin:10px;"></ul>
+      </div>
+    </div>
+  </div>
+  <div id="list_contextmenu" class="easyui-menu" style="width: 120px;">
+    <div onclick="func_update()" data-options="iconCls:'icon-edit',auth:{authid:'o_f_updfunc',type:'disable'}">编辑</div>
+    <div onclick="func_remove()"  data-options="iconCls:'icon-remove',auth:{authid:'o_f_delfunc',type:'hide'}">移除</div>
+  </div>
+</body>
+</html>

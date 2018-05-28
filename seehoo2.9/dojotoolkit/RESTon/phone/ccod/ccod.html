@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <title>CCOD provider</title>
+    <script>
+        if(!window.RESTon)window.RESTon=parent.RESTon;
+        function on(handle) {
+            RESTon.on("Phone", function (event, phoneEvent, data) {
+                var args = [];
+                for (var i = 1; i < arguments.length; i++)
+                    args[i - 1] = arguments[i];
+                handle.apply(phone, args);
+            });
+        }
+
+        function fire(event, data) {
+          var args = [ "Phone" ];
+          for (var i = 0; i < arguments.length; i++)
+            args[i + 1] = arguments[i];
+          log(event, event);
+          RESTon.fire.apply(phone, args);
+        }
+        
+        function log(msg, type) {
+          switch (type) {
+          case "request":
+            logRequest(msg);
+            break;
+          case "event":
+            logEvent(msg);
+            break;
+          default:
+            logRequest(msg);
+            break;
+          }
+        }
+        function logRequest(request) {
+          if (window.console)
+            console.info(request);
+        }
+        function logEvent(event) {
+          if (window.console)
+            console.info(event);
+        }
+        
+        var ResultCodeEnum=[{
+          code:0,
+          name:"RESULT_SUCCESS",
+          msg:"调用成功"
+        },{
+          code:1,
+          name:"RESULT_GENERAL_FAILURE",
+          msg:"一般性失败"
+        },{
+          code:2,
+          name:"RESULT_CREATE_SOCKET_FAILED",
+          msg:"创建套接口失败"
+        },{
+          code:3,
+          name:"RESULT_CONNECT_FAILED",
+          msg:"服务器连接失败"
+        },{
+          code:4,
+          name:"RESULT_SERVER_NAME_INVALID",
+          msg:"服务器地址非法"
+        },{
+          code:5,
+          name:"RESULT_RESOURCE_FAILURE",
+          msg:"系统资源不足"
+        },{
+          code:6,
+          name:"RESULT_AGENT_STATE_ERROR",
+          msg:"状态错误"
+        },{
+          code:7,
+          name:"RESULT_ALREADY_INITIALIZED",
+          msg:"已经初始化"
+        },{
+          code:8,
+          name:"RESULT_NOT_INITIALIZED",
+          msg:"尚未初始化"
+        },{
+          code:9,
+          name:"RESULT_INVALID_PARAMETERS",
+          msg:"登录信息不能为空"
+        },{
+          code:10,
+          name:"RESULT_SEND_FAILED",
+          msg:"发送失败"
+        },{
+          code:11,
+          name:"RESULT_RECV_FAILED",
+          msg:"接收失败"
+        },{
+          code:12,
+          name:"RESULT_GETCONFIG_FAILED",
+          msg:"取配置信息失败"
+        }];
+        var CallTypeEnum=[{
+          code:0,
+          name:"INBOUND",
+          msg:"呼入"
+        },{
+          code:1,
+          name:"OUTBOUND",
+          msg:"外呼"
+        },{
+          code:2,
+          name:"INTERNAL",
+          msg:"内呼"
+        }];
+        var EventTypeEnum=[{
+          code:0,
+          name:"CALLBACK_AGENT_MSG",
+          msg:"普通日志信息"
+        },{
+          code:1,
+          name:"CALLBACK_AGENT_STATE",
+          msg:"坐席状态信息"
+        },{
+          code:0,
+          name:"CALLBACK_AGENT_EVENT",
+          msg:"坐席事件信息"
+        }];
+        var AgentStatusEnum=[{
+          code:0,
+          name:"AGENT_IDLE",
+          msg:"登录前的状态"
+        },{
+          code:1,
+          name:"AGENT_READY",
+          msg:"空闲状态(可以接电话)"
+        },{
+          code:2,
+          name:"AGENT_OTHER",
+          msg:"其他工作状态"
+        },{
+          code:3,
+          name:"AGENT_WORKING",
+          msg:"工作状态(通话中)"
+        },{
+          code:4,
+          name:"AGENT_NOTREADY",
+          msg:"座席未就绪(置忙, 刚登录后的默认状态)"
+        },{
+          code:5,
+          name:"AGENT_ALERTING",
+          msg:"振铃状态(电话振铃，触发应用)"
+        },{
+          code:6,
+          name:"AGENT_LOCKED",
+          msg:"预锁定(已被服务端选中，稍后有电话呼入)"
+        },{
+          code:7,
+          name:"AGENT_ACW",
+          msg:"接完电话后的事后整理"
+        },{
+          code:8,
+          name:"AGENT_LOGOUT",
+          msg:"坐席登出状态"
+        },{
+          code:9,
+          name:"AGENT_AWAY",
+          msg:"离席"
+        }];
+        var AgentEventEnum=[{
+          code:0,
+          name:"CALLEVENT_ALERTING",
+          msg:"坐席振铃事件"
+        },{
+          code:1,
+          name:"CALLEVENT_CONNECTED",
+          msg:"双方通话"
+        },{
+          code:2,
+          name:"CALLEVENT_OP_DISCONNECT",
+          msg:"客户挂断电话"
+        },{
+          code:3,
+          name:"CALLEVENT_TP_DISCONNECT",
+          msg:"本方挂断(坐席挂断)"
+        },{
+          code:4,
+          name:"CALLEVENT_THIRD_PARTY_DISCONNECT",
+          msg:"第三方挂断"
+        },{
+          code:5,
+          name:"CALLEVENT_FOURTH_PARTY_DISCONNECT",
+          msg:"第四方挂断"
+        },{
+          code:6,
+          name:"CALLEVENT_HOLD",
+          msg:"客户被保持"
+        },{
+          code:7,
+          name:"CALLEVENT_HOLD_RETRIEVE",
+          msg:"保持接回"
+        },{
+          code:8,
+          name:"CALLEVENT_CONSULT_CONNECTED_OP",
+          msg:"咨询，发起咨询方收到的"
+        },{
+          code:9,
+          name:"CALLEVENT_CONSULT_RETRIEVE",
+          msg:"咨询接回"
+        },{
+          code:10,
+          name:"CALLEVENT_TRANSFER",
+          msg:"转移"
+        },{
+          code:11,
+          name:"CALLEVENT_CONFERENCE",
+          msg:"会议"
+        },{
+          code:12,
+          name:"CALLEVENT_INTERNAL_ALERTING_TP",
+          msg:"内部呼叫振铃(本方)"
+        },{
+          code:13,
+          name:"CALLEVENT_MONITOR",
+          msg:"监听"
+        },{
+          code:14,
+          name:"CALLEVENT_FORCE_CONNECT",
+          msg:"强插"
+        },{
+          code:15,
+          name:"CALLEVENT_FORCE_DISCONNECT",
+          msg:"强拆 "
+        },{
+          code:16,
+          name:"CALLEVENT_MONITOR_ALERTING",
+          msg:"监听振铃(监听者被通知)"
+        },{
+          code:17,
+          name:"CALLEVENT_INTERNAL_CONNECTED_TP",
+          msg:"内部咨询通话(本方)"
+        },{
+          code:18,
+          name:"CALLEVENT_CONSULT_ALERTING_TP",
+          msg:"咨询振铃"
+        },{
+          code:19,
+          name:"CALLEVENT_OUTBOUND_ALERTING_TP",
+          msg:"外部呼叫振铃(本方)"
+        },{
+          code:20,
+          name:"CALLEVENT_OUTBOUND_CONNECTED_TP",
+          msg:"外部呼叫通话(本方)"
+        },{
+          code:21,
+          name:"CALL_EVENT_CLEAR_CALL",
+          msg:"监听情况下全拆电话 "
+        },{
+          code:22,
+          name:"CALLEVENT_OUTBOUND_ALERTING_OP",
+          msg:"外部呼叫振铃(对方)"
+        },{
+          code:23,
+          name:"CALLEVENT_OUTBOUND_CONNECTED_OP",
+          msg:"外部呼叫通话(对方)"
+        },{
+          code:24,
+          name:"CALLEVENT_INTERNAL_ALERTING_OP",
+          msg:"内部呼叫振铃(对方)"
+        },{
+          code:25,
+          name:"CALLEVENT_INTERNAL_CONNECTED_OP",
+          msg:"内部呼叫通话(对方)"
+        },{
+          code:26,
+          name:"CALLEVENT_CONSULT_CONNECTED_TP",
+          msg:"咨询通话，被咨询方收到的(本方)"
+        },{
+          code:27,
+          name:"CALLEVENT_CONSULT_ALTERTING_OP",
+          msg:"咨询振铃(对方)"
+        },{
+          code:28,
+          name:"CALLEVENT_AGENT_BEHOLD",
+          msg:"坐席被保持事件"
+        },{
+          code:29,
+          name:"CALLEVENT_AGNET_BEUNHOLD",
+          msg:"坐席被保持接回事件"
+        }];
+        var TriggerTypeEnum=[{
+          code:0,
+          name:"TRIGGER_NONE",
+          msg:"无触发"
+        },{
+          code:1,
+          name:"TRIGGER_ALERTING",
+          msg:"振铃触发"
+        },{
+          code:2,
+          name:"TRIGGER_CONNETED",
+          msg:"通话触发"
+        }];
+        
+        var phoneStatus = "CLOSED";
+        var agentStatus = "UNKNOWN";
+        var callStatus = "FREE";
+        var auxRC = 0;
+        var dn="",ani,dnis,agentid,agentpw,userDateId;
+        
+        function OnCallerTriggering(tritype, calltype, ani, dnis, reqskill, resskill, ivrdata, sessionid) {
+          var enumTritype=TriggerTypeEnum[tritype];
+          var enumCalltype=CallTypeEnum[calltype];
+          //var logger= writeAndLog(" <=Phone.Trigger "+dnis,"style='color:gray;'");
+          log(" <=Phone.Trigger "+dnis);
+          if(tritype!=undefined)
+            //printLog(logger,"tritype",enumTritype.name);
+          log(" tritype : " + enumTritype.name);
+          if(calltype!=undefined)
+            //printLog(logger,"calltype",enumCalltype.name);
+          log(" calltype : " + enumCalltype.name);
+          if(ani!=undefined)
+            //printLog(logger,"ani",new String(ani));
+          log(" ani :"+new String(ani));
+          if(dnis!=undefined)
+            //printLog(logger,"dnis",new String(dnis));
+          log(" dnis :"+new String(dnis));
+          if(reqskill!=undefined)
+            //printLog(logger,"reqskill",new String(reqskill));
+          log(" reqskill :"+new String(reqskill));
+          if(resskill!=undefined)
+            //printLog(logger,"resskill",new String(resskill));
+          log(" resskill :"+new String(resskill));
+          if(ivrdata!=undefined)
+            //printLog(logger,"ivrdata",new String(ivrdata));
+          log(" ivrdata :"+new String(ivrdata));
+          if(sessionid!=undefined){
+            //printLog(logger,"sessionid",new String(sessionid));
+            log(" sessionid :"+new String(sessionid));
+            var cid=sessionid.split(":")[0];
+            //var bi=$caf.javaCreate("java.math.BigInteger",cid,16);
+            var bi = cid;
+            cid=bi.toString(10);
+            for(var i=cid.length;i<19;i++)
+              cid="0"+cid;
+            userDataID=cid;
+            callID=cid;
+          }
+          this.ani=ani;
+          this.dnis=dnis;
+          this.userDateId = "";
+          switch(enumTritype.name){
+          case "TRIGGER_ALERTING":
+            switch(enumCalltype.name){
+            case "INBOUND":
+              callStatus="RING";
+              //writeLog(" <=Phone.OnRing "+ani,"style='color:magenta;'");
+              var splits=ivrdata.split("|");
+              var custInfo={};
+              for( var i in splits){
+                var eqIndex=splits[i].indexOf("=");
+                var key=splits[i].substring(0,eqIndex);
+                var value=splits[i].substring(eqIndex+1);
+                custInfo[key]=value;
+              }
+              fire("OnRing",custInfo);
+              break;
+            case "OUTBOUND":
+              callStatus="DIAL";
+              //writeLog(" <=Phone.OnDial "+dnis,"style='color:magenta;'");
+              fire("OnDial");
+              break;
+            }
+            break;
+          case "TRIGGER_CONNETED":
+            callStatus="TALK";
+            //writeLog(" <=Phone.OnTalk","style='color:black;'");
+            fire("OnTalk");
+            break;
+          }
+        }
+        function OnCallBackEventFunc(inevent, wparam, lparam) {
+          var eventType=EventTypeEnum[inevent]; 
+          switch(inevent){
+          case 0:
+            //writeLog(" <=Phone.Log: "+lparam,"style='color:gray;'");
+            log(" <=Phone.Log: "+lparam);
+            break;
+          case 1:
+            var agentStatusFunc=AgentStatusEnum[wparam];
+            //var logger = writeAndLog(" <=Phone.AgentSttusChange to: "+agentStatus.name+"["+agentStatus.msg+"]","style='color:gray;'");
+            log(" <=Phone.AgentSttusChange to: "+agentStatusFunc.name+"["+agentStatusFunc.msg+"]");
+            if(lparam!=undefined)
+              //printLog(logger,"lparam",new String(lparam));
+              log("lparam:"+ lparam);
+            switch(agentStatusFunc.name){
+            case "AGENT_IDLE":
+              phoneStatus="OPENNING";
+              agentStatus="AUX";
+              //writeLog(" <=Phone.OnOpenning","style='color:black;'");
+              log(" <=Phone.OnOpenning");
+              fire("OnOpenning");
+              phoneStatus="OPENED";
+              //writeLog(" <=Phone.OnOpened","style='color:black;'");
+              log(" <=Phone.OnOpened");
+              fire("OnOpened");
+              break;
+            case "AGENT_LOGOUT":
+              agentStatus="UNKNOWN";
+              phoneStatus="CLOSING";
+              //writeLog(" <=Phone.OnClosing","style='color:black;'");
+              log(" <=Phone.OnClosing");
+              fire("OnClosing");
+              phoneStatus="CLOSED";
+              //writeLog(" <=Phone.OnClosed","style='color:black;'");
+              log(" <=Phone.OnClosed");
+              fire("phone","OnClosed");
+              break;
+            case "AGENT_AWAY":
+              agentStatus="AUX";
+              //writeLog(" <=Phone.OnAux "+auxRC,"style='color:black;'");
+              log(" <=Phone.OnAux "+auxRC);
+              fire("OnAux",auxRC);
+              break;
+            case "AGENT_NOTREADY":
+              // agentStatus="AUX";
+              // if(phoneStatus=="OPENED"){
+              // var logger=$caf.newLogger(" <=Phone.OnAux "+auxRC,"style='color:black;'");
+              // logger.close();
+              // $caf.fire("phone","OnAux",auxRC);
+              // }
+              break ;
+            case "AGENT_ACW":
+              agentStatus="ACW";
+              //writeLog(" <=Phone.OnAcw","style='color:black;'");
+              log(" <=Phone.OnAcw");
+              fire("OnAcw");
+              break;
+            case "AGENT_READY":
+              agentStatus="READY";
+              //writeLog(" <=Phone.OnReady","style='color:black;'");
+              log(" <=Phone.OnReady");
+              fire("OnReady");
+              break;
+            }
+            break;
+          case 2:
+            var agentEvent=AgentEventEnum[wparam];
+            //var logger = writeAndLog(" <=Phone.CallEvent: "+agentEvent.name+"["+agentEvent.msg+"]","style='color:gray;'");
+            log(" <=Phone.CallEvent: "+agentEvent.name+"["+agentEvent.msg+"]");
+            if(lparam!=undefined)
+              //printLog(logger,"lparam",new String(lparam));
+            log(" lparam:"+lparam);
+            switch(agentEvent.name){
+            case "CALLEVENT_HOLD":
+              callStatus="HOLD";
+              //writeLog(" <=Phone.OnHold","style='color:black;'");
+              log(" <=Phone.OnHold");
+              fire("OnHold");
+              break;
+            case "CALLEVENT_HOLD_RETRIEVE":
+              callStatus="TALK";
+              //writeLog(" <=Phone.OnUnhold","style='color:black;'");
+              log(" <=Phone.OnUnhold");
+              fire("OnUnhold");
+              break;
+            case "CALLEVENT_CONSULT_ALTERTING_OP":
+              callStatus="CONSULTING";
+              //writeLog(" <=Phone.OnConsulting","style='color:black;'");
+              log(" <=Phone.OnConsulting");
+              fire("OnConsulting");
+              break;
+            case "CALLEVENT_CONSULT_CONNECTED_OP":
+              callStatus="CONSULTED";
+              //writeLog(" <=Phone.OnConsulted","style='color:black;'");
+              log(" <=Phone.OnConsulted");
+              fire("OnConsulted");
+              if(AUTOOP=="CONFERENCE"){
+                conference();
+              }else if(AUTOOP=="TRANSFER"){
+                transfer();
+              }
+              AUTOOP=undefined;
+              break;
+            case "CALLEVENT_TP_DISCONNECT":
+              callStatus="FREE";
+              //writeLog(" <=Phone.OnReleased","style='color:hotpink;'");
+              log(" <=Phone.OnReleased");
+              fire("OnReleased");
+              break;
+            case "CALLEVENT_CONSULT_RETRIEVE":
+              callStatus="TALK";
+              //writeLog(" <=Phone.OnReconnect","style='color:black;'");
+              log(" <=Phone.OnReconnect");
+              fire("OnReconnect");
+              break;
+            case "CALLEVENT_CONFERENCE":
+            case "CALLEVENT_AGENT_BEHOLD":
+              callStatus="CONFERENCE";
+              //writeLog(" <=Phone.OnConference","style='color:black;'");
+              log(" <=Phone.OnConference");
+              fire("OnConference");
+              break;
+            case "CALLEVENT_AGNET_BEUNHOLD":
+              callStatus="TALK";
+              //writeLog(" <=Phone.OnConferenceEnd","style='color:black;'");
+              log(" <=Phone.OnConference");
+              fire("OnConferenceEnd");
+              break;
+            }
+            break;
+          }
+        } 
+        function config(args){
+          //var logger=$caf.newLogger(" @ Phone config","style='color:gray;'");
+          //logJs(args,logger);
+          //logger.close();
+          if(args.dn)
+            dn=args.dn;
+          if(args.agentid)
+            agentid=args.agentid;
+          if(args.agentpw)
+            agentpw=args.agentpw;
+        }
+        function open(){
+          CCEA.AgentLoginEx(agentid,agentpw,dn,0,0);
+        }
+        function close(){
+          CCEA.Logout();
+        }
+        function ready(){
+          CCEA.SetReady();
+        }
+        function aux(reasonCode){
+          if(reasonCode==undefined)
+            reasonCode="0";
+          auxRC=reasonCode;
+          CCEA.SetAway(reasonCode);
+        }
+        function acw(){
+        }
+        function next(){
+          var ct=getCampaignType();
+          /*var succ=ct.indexOf("0|")==0;
+          if(!succ)
+            return;
+            */
+          var campaignType=ct.substring(2);
+          if(campaignType=="CAMPAIGNPREVIEW"){
+            var record=getRecord();
+            // if(!record||record==-1)return;
+            //writeLog(" <=Phone.OnPreview "+record,"style='color:magenta;'");
+            log(" <=Phone.OnPreview "+record);
+            // var splits=record.split("|");
+            if(record!=-1) ready();
+            fire("OnPreview",record);
+          }else{
+            ready();
+          }
+        }
+        function canNext(){
+          if(phoneStatus!="OPENED")
+            return false;
+          if(callStatus!="FREE")
+            return false;
+          return true;
+        }
+        function dial(dn,ani){
+          if(ani==undefined)
+            ani="";
+          CCEA.MakeCall(ani,dn);
+        }
+        function answer(){
+          CCEA.AnswerSipCall();
+        }
+        function dtmf(dtmf){
+        }
+        function release(){
+          CCEA.HangUp();
+        }
+        function hold(){
+          CCEA.SetHold();
+        }
+        function unhold(){
+          CCEA.SetRetrieve();
+        }
+        function consult(dn,consultType){
+          if(typeof(consultType)=="undefined") consultType= "CTIConsultType_DestAgent";
+          else if(typeof(consultType)=="boolean"){
+            if(consultType) consultType  = "CTIConsultType_DestAgent";
+            else consultType= "CTIConsultType_DestDN";
+          }
+          CCEA.SetConsult(consultType,dn);
+        }
+        function conference(){
+          CCEA.SetMeet();
+        }
+        function conferenceIVR(userData){
+          CCEA.conferenceIVR(userData);
+        }
+        function transferIVR(userData){
+          CCEA.SetAssociateData(userData);
+        }
+        function autoConference(dn){
+          AUTOOP="CONFERENCE";
+          consult(dn);
+        }
+        function autoTransfer(dn){
+          AUTOOP="TRANSFER";
+          consult(dn);
+        }
+        function transfer(){
+          CCEA.SetTransfer();
+        }
+        function reconnect(){
+          CCEA.SetRetrieve();
+        }
+        function alternate(){
+        }
+        function monitor(dn){
+          CCEA.SilentMonitor();
+        }
+        function guide(dn){
+          CCEA.Intrude();
+        }
+        function takeOver(dn){
+          CCEA.DropAll();
+        }
+        /* add cao start 15-05-20 */
+        function addBlackLists(customid,phone,validBeginTime,validEndTime){
+          return CCEA.addBlackLists(customid,phone,validBeginTime,validEndTime);
+        }
+        function addContactResult(activeid,resultid,caseid,customerid,resultCode){
+          return CCEA.addContactResult(activeid,resultid,caseid,customerid,resultCode);
+        }
+        function getRecord(){
+          return CCEA.getrecord();
+        }
+        function getCampaignType(){
+          return CCEA.getcampaigntype();
+        }
+        function getEnterpriseID(){
+          return CCEA.GetEnterpriseID();
+        }
+        function setAssociateData(userData){
+          return CCEA.SetAssociateData(userData);
+        }
+        function setAgentInfo(agentid,agentpw,dn,agentName,ani){
+          return CCEA.setAgentInfo(agentid,agentpw,dn,agentName,ani);
+        }
+        function setDialNumber(ani,dnis){
+          return CCEA.SetDialNumber(ani,dnis);
+        }
+        /* add cao end 15-05-20 */
+        function getDN(){
+          return dn;
+        }
+        function getAgentid(){
+          return agentid;
+        }
+        function getCalling(){
+          return calling;
+        }
+        function getCalled(){
+          return called;
+        }
+        function getANI(){
+          return ani;
+        }
+        function getDNIS(){
+          return dnis;
+        }
+        function getCallID(){
+          return callID;
+        }
+        function setUserData(userData,value){
+        }
+        function updateUserData(userData,value){
+        }
+        function getUserDataID(){
+          return userDataID;
+        }
+        function getUserData(){
+          
+        }
+        function delUserData(keys){
+        }
+        function clearUserData(){
+        }
+        function getConsultCalling(){
+        }
+        function getConsultCalled(){
+        }
+        function getConsultANI(){
+        }
+        function getConsultDNIS(){
+        }
+        function getConsultCallID(){
+        }
+        function setConsultUserData(userData){
+        }
+        function updateConsultUserData(userData,value){
+        }
+        function getConsultUserDataID(){
+        }
+        function getConsultUserData(){
+        }
+        function delConsultUserData(keys){
+        }
+        function clearConsultUserData(){
+        }
+        function kickOut(dn,agentid){
+        }
+        function getPhoneStatus(){
+          return phoneStatus;
+        }
+        function getAgentStatus(){
+          return agentStatus;
+        }
+        function getCallStatus(){
+          return callStatus;
+        }
+        function getAuxRC(){
+          return auxRC;
+        }
+        function canOpen(){
+          return CCEA&&phoneStatus=="CLOSED";
+        }
+        function canClose(){
+          return phoneStatus=="OPENED"&&callStatus=="FREE";
+        }
+        function canReady(){
+          return phoneStatus=="OPENED"&&callStatus=="FREE"&&agentStatus!="READY";
+        }
+        function canAux(){
+          return phoneStatus=="OPENED"&&callStatus=="FREE"&&agentStatus!="AUX";
+        }
+        function canAcw(){
+          return false;
+        }
+        function canAnswer(){
+          return phoneStatus=="OPENED"&&callStatus=="RING";
+        }
+        function canRelease(){
+          return phoneStatus=="OPENED"&&(callStatus=="DIAL"||callStatus=="RING"||callStatus=="TALK"||callStatus=="CONFERENCE");
+        }
+        function canDial(){
+          return phoneStatus=="OPENED"&&agentStatus!="ACW"&&callStatus=="FREE";
+        }
+        function canHold(){
+          return phoneStatus=="OPENED"&&callStatus=="TALK";
+        }
+        function canUnhold(){
+          return phoneStatus=="OPENED"&&callStatus=="HOLD";
+        }
+        function canConsult(mulitparty){
+          return phoneStatus=="OPENED"&&callStatus=="TALK";
+        }
+        function canComplete(){
+          return phoneStatus=="OPENED"&&callStatus=="CONSULTED";
+        }
+        function canConference(){
+          return true;
+        }
+        function canTransfer(){
+          return true;
+        }
+        function canReconnect(){
+          return phoneStatus=="OPENED"&&(callStatus=="CONSULTING"||callStatus=="CONSULTED");
+        }
+        function canReleaseLine(){
+          return false;
+        }
+        function canFinish(){
+          return false;
+        }
+        function canAlternate(){
+          return true;
+        }
+        /*function getParties(){
+          var set=CCEA.getParties();
+          return $caf.set2js(set);
+        }
+        function getConsultParties(){
+          var set=CCEA.getConsultParties();
+          return $caf.set2js(set);
+        }*/
+
+        var phone = {
+            on: on,
+            open: open,
+            config : config,
+            open : open,
+            close : close,
+            ready : ready,
+            aux : aux,
+            acw : acw,
+            next : next,
+            canNext : canNext,
+            dial : dial,
+            answer : answer,
+            dtmf : dtmf,
+            release : release,
+            hold : hold,
+            unhold : unhold,
+            consult : consult,
+            conference : conference,
+            conferenceIVR : conferenceIVR,
+            transferIVR : transferIVR,
+            autoConference : autoConference,
+            autoTransfer : autoTransfer,
+            transfer : transfer,
+            reconnect : reconnect,
+            alternate : alternate,
+            monitor : monitor,
+            guide : guide,
+            takeOver : takeOver,
+            addBlackLists : addBlackLists,
+            addContactResult : addContactResult,
+            getRecord : getRecord,
+            getCampaignType : getCampaignType,
+            getEnterpriseID : getEnterpriseID,
+            setAssociateData : setAssociateData,
+            setAgentInfo : setAgentInfo,
+            setDialNumber : setDialNumber,
+            getDN : getDN,
+            getAgentid : getAgentid,
+            getCalling : getCalling,
+            getCalled : getCalled,
+            getANI : getANI,
+            getDNIS : getDNIS,
+            getCallID : getCallID,
+            setUserData : setUserData,
+            updateUserData : updateUserData,
+            getUserDataID : getUserDataID,
+            getUserData : getUserData,
+            delUserData : delUserData,
+            clearUserData : clearUserData,
+            getPhoneStatus : getPhoneStatus,
+            getAgentStatus : getAgentStatus,
+            getCallStatus : getCallStatus,
+            getAuxRC : getAuxRC,
+            canOpen : canOpen,
+            canClose : canClose,
+            canReady : canReady,
+            canAux : canAux,
+            canAcw : canAcw,
+            canAnswer : canAnswer,
+            canRelease : canRelease,
+            canDial : canDial,
+            canHold : canHold,
+            canUnhold : canUnhold,
+            canConsult : canConsult,
+            canComplete : canComplete,
+            canConference : canConference,
+            canTransfer : canTransfer,
+            canReconnect : canReconnect,
+            canReleaseLine : canReleaseLine,
+            canFinish : canFinish,
+            canAlternate : canAlternate
+        };
+        function init(){
+          RESTon.assemble("Phone", phone);
+        };
+    </script>
+    <script for=CCEA event="OnCallerTriggering(tritype, calltype, ani, dnis, reqskill, resskill, ivrdata, sessionid)">
+        OnCallerTriggering(tritype, calltype, ani, dnis, reqskill, resskill, ivrdata, sessionid);
+    </script>
+    <script for=CCEA event="OnCallBackEventFunc(inevent, wparam, lparam)">
+        OnCallBackEventFunc(inevent, wparam, lparam);
+    </script>
+</head>
+<body onload="init();">
+<object id="CCEA" name="CCEA" classid="CLSID:1DF688EB-1FC2-11E5-8DC1-00FF6D5A49C4" width=895 height=125 align="left">
+    <param name="_Version" value="65536">
+    <param name="_ExtentX" value="3634">
+    <param name="_ExtentY" value="2752">
+    <param name="_StockProps" value="0">
+</object>
+</body>
+</html>

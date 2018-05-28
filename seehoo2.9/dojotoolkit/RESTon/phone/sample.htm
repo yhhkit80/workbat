@@ -1,0 +1,195 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Phone Sample</title>
+<script src="../../../../RESTon.js" config="easyui:false"></script>
+<script>
+  RESTon.ready("Phone",function(phoneIsReady,phone){
+    window.phone=phone;
+    phone.on(function(event,data){
+      switch(event){
+      case "OnPreview":
+        window.preview=data;
+        break;
+      case "OnReady":
+        //phone.readyOCS();
+        break;
+      case "OnTalk":
+        break;
+      default:
+        break;
+      }
+      updateUI();
+    });
+    $(updateUI);
+  })
+  function updateUI(){
+    $("#openB").attr("disabled",!phone.canOpen());
+    $("#closeB").attr("disabled",!phone.canClose());
+    $("#ready").attr("disabled",!phone.canReady());
+    $("#aux").attr("disabled",!phone.canAux());
+    $("#answer").attr("disabled",!phone.canAnswer());
+    $("#release").attr("disabled",!phone.canRelease());
+    $("#finish").attr("disabled",!phone.canFinish());
+    $("#dial").attr("disabled",!phone.canDial());
+    $("#hold").attr("disabled",!phone.canHold());
+    $("#unhold").attr("disabled",!phone.canUnhold());
+    $("#consult").attr("disabled",!phone.canConsult());
+    $("#releaseLine").attr("disabled",!phone.canReleaseLine());
+    $("#conference").attr("disabled",!phone.canConference());
+    $("#autoConference").attr("disabled",!phone.canConsult());
+    $("#autoTransfer").attr("disabled",!phone.canConsult());
+    $("#transfer").attr("disabled",!phone.canTransfer());
+    $("#reconnect").attr("disabled",!phone.canReconnect());
+    $("#alternate").attr("disabled",!phone.canAlternate());
+    $("#monitor").attr("disabled",!phone.canDial());
+    $("#guide").attr("disabled",!phone.canDial());
+    $("#takeOver").attr("disabled",!(phone.getPhoneStatus()=="OPENED"&&phone.getCallStatus()=="CONFERENCE"));
+  }
+  
+  function drawServiceDiv(){
+    var divnode = document.createElement("div");
+    divnode.style.position = "absolute";
+    divnode.style.zindex = 10;
+    divnode.style.left= "500px";
+    divnode.style.top= "10px";
+    divnode.style.width = "400px";
+    divnode.style.height = "250px";
+    divnode.style.backgroundColor = "#999999";
+    divnode.style.paddingLeft = "20px";
+    document.body.appendChild(divnode);
+    var serviceArray =phone.getServices(); 
+    for(var service in serviceArray){
+      var radioObject = document.createElement("input");
+      radioObject.type = "radio";
+      radioObject.id = serviceArray[service].Serviceid;
+      radioObject.name = "services";
+      divnode.appendChild(radioObject);
+      var temp = document.createElement("span");
+      temp.innerText = "  "+serviceArray[service].Serviceid+"   "+serviceArray[service].Servicec;
+      temp.style.color = "#FFFFFF";
+      divnode.appendChild(temp);
+      divnode.appendChild(document.createElement("br"));
+    }
+    document.getElementsByName("services")[0].checked = "true";
+    var btn = document.createElement("input");
+    btn.type = "button";
+    btn.value = "确定";
+    btn.onclick = function(){ 
+      var tempBtn = document.getElementsByName("services");
+      for(var i = 0 ; i < tempBtn.length ; i++){
+        if(tempBtn[i].checked){
+          phone.dial(dn.value,tempBtn[i].id);
+          break;
+        }
+      }
+      divnode.parentNode.removeChild(divnode);
+    };
+    divnode.appendChild(btn);
+  }
+  
+  function testTransfer(){
+    phone.updateUserData("CallType","7");
+    phone.transfer(dn.value);
+  }
+  
+  function testOpen(){
+    //phone.setAutoIn(false);
+    phone.open();
+    
+  }
+  
+</script>
+</head>
+<body>
+  <input type="text" name="dn" value="" /><a href="../caf.cer">下载根证书</a>
+  <br />
+  <!-- Jtapi  --> 
+  <input type="button" value="连接" id="openB" name="openB" disabled="true" onclick="phone.open();" />
+  <input type="button" value="断开" id="closeB" name="closeB" disabled="true" onclick="phone.close();" />
+  <input type="button" value="就绪" id="ready" name="ready" disabled="true" onclick="phone.ready();" />
+  <input type="button" value="示忙" id="aux" name="aux" disabled="true" onclick="phone.aux();" />
+  <input type="button" value="应答" id="answer" name="answer" disabled="true" onclick="phone.answer();" />
+  <input type="button" value="挂机" id="release" name="release" disabled="true" onclick="phone.release();" />
+  <input type="button" value="完成会话" id="finish" name="finish" disabled="true" onclick="phone.finish();" />
+  <input type="button" value="外呼" id="dial" name="dial" disabled="true" onclick="phone.dial(dn.value);" />
+  <input type="button" value="保持" id="hold" name="hold" disabled="true" onclick="phone.hold();" />
+  <input type="button" value="接回" id="unhold" name="unhold" disabled="true" onclick="phone.unhold();" />
+  <input type="button" value="释放线路" id="releaseLine" name=releaseLine disabled="true" onclick="phone.releaseLine();" /> 
+  <input type="button" value="咨询" id="consult" name="consult" disabled="true" onclick="phone.consult(dn.value);" />
+  <input type="button" value="会议" id="conference" name="conference" disabled="true" onclick="if(phone.canComplete())phone.conference();else phone.conference(dn.value);" />
+  <input type="button" value="转接" id="transfer" name="transfer" disabled="true" onclick="if(phone.canComplete())phone.transfer();else phone.transfer(dn.value);" />
+  <input type="button" value="恢复" id="reconnect" name="reconnect" disabled="true" onclick="phone.reconnect(true);" />
+  <input type="button" value="自动会议" id="autoConference" name="autoConference" disabled="true" onclick="if(phone.canConsult())phone.autoConference(dn.value);" />
+  <input type="button" value="自动转接" id="autoTransfer" name="autoTransfer" disabled="true" onclick="if(phone.canConsult())phone.autoTransfer(dn.value);" />
+  <input type="button" value="切换" id="alternate" name="alternate" disabled="true" onclick="phone.alternate();" />
+  <input type="button" value="监听" id="monitor" name="monitor" disabled="true" onclick="phone.monitor(dn.value);" />
+  <input type="button" value="指导" id="guide" name="guide" disabled="true" onclick="phone.guide(dn.value);" />
+  <input type="button" value="接管" id="takeOver" name="takeOver" disabled="true" onclick="phone.takeOver(dn.value);" />
+  
+   
+  <!-- Aspect    
+  <input type="button" value="连接" id="openB" name="openB" disabled="true" onclick="phone.open();" />
+  <input type="button" value="断开" id="closeB" name="closeB" disabled="true" onclick="phone.close();" />
+  <input type="button" value="就绪" id="ready" name="ready" disabled="true" onclick="phone.ready();" />
+  <input type="button" value="示忙" id="aux" name="aux" disabled="true" onclick="phone.aux();" />
+  <input type="button" value="应答" id="answer" name="answer" disabled="true" onclick="phone.answer();" />
+  <input type="button" value="挂机" id="release" name="release" disabled="true" onclick="phone.release();" />
+  <input type="button" value="完成会话" id="finish" name="finish" disabled="true" onclick="window.open('../aspect/disps.htm')" />
+  <input type="button" value="外呼" id="dial" name="dial" disabled="true" onclick="drawServiceDiv();" />
+  <input type="button" value="保持" id="hold" name="hold" disabled="true" onclick="phone.hold();" />
+  <input type="button" value="接回" id="unhold" name="unhold" disabled="true" onclick="phone.unhold();" />
+  <input type="button" value="释放线路" id="releaseLine" name=releaseLine disabled="true" onclick="phone.releaseLine();" /> 
+  <input type="button" value="咨询" id="consult" name="consult" disabled="true" onclick="phone.consult(dn.value);" />
+  <input type="button" value="会议" id="conference" name="conference" disabled="true" onclick="phone.conference();" /> 
+  <input type="button" value="转接" id="transfer" name="transfer" disabled="true" onclick="phone.transfer();" /> 
+  <input type="button" value="恢复" id="reconnect" name="reconnect" disabled="true" onclick="phone.reconnect();" />
+  <input type="button" value="自动会议" id="autoConference" name="autoConference" disabled="true" onclick="if(phone.canConsult())phone.autoConference(dn.value);" />
+  <input type="button" value="自动转接" id="autoTransfer" name="autoTransfer" disabled="true" onclick="if(phone.canConsult())phone.autoTransfer(dn.value);" />
+  <input type="button" value="切换" id="alternate" name="alternate" disabled="true" onclick="phone.alternate();" />
+  <input type="button" value="监听" id="monitor" name="monitor" disabled="true" onclick="phone.monitor(dn.value);" />
+  <input type="button" value="指导" id="guide" name="guide" disabled="true" onclick="phone.guide(dn.value);" />
+  <input type="button" value="接管" id="takeOver" name="takeOver" disabled="true" onclick="phone.takeOver(dn.value);" />
+-->
+  
+  <!-- PCS 
+  <input type="button" value="连接" id="openB" name="openB" disabled="true" onclick="phone.open();" />
+  <input type="button" value="断开" id="closeB" name="closeB" disabled="true" onclick="phone.close();" />
+  <input type="button" value="就绪" id="ready" name="ready" disabled="true" onclick="phone.ready();" />
+  <input type="button" value="示忙" id="aux" name="aux" disabled="true" onclick="phone.aux();" />
+  <input type="button" value="应答" id="answer" name="answer" disabled="true" onclick="phone.answer();" />
+  <input type="button" value="挂机" id="release" name="release" disabled="true" onclick="phone.release();" />
+  <input type="button" value="完成会话" id="finish" name="finish" disabled="true" onclick="phone.finish('89');" />
+  <input type="button" value="外呼" id="dial" name="dial" disabled="true" onclick="phone.dial(dn.value);" />
+  <input type="button" value="保持" id="hold" name="hold" disabled="true" onclick="phone.hold();" />
+  <input type="button" value="接回" id="unhold" name="unhold" disabled="true" onclick="phone.unhold();" />
+  <input type="button" value="释放线路" id="releaseLine" name=releaseLine disabled="true" onclick="phone.releaseLine();" /> 
+  <input type="button" value="咨询" id="consult" name="consult" disabled="true" onclick="phone.consult(dn.value);" />
+  <input type="button" value="会议" id="conference" name="conference" disabled="true" onclick="phone.conference(dn.value);" />
+  <input type="button" value="转接" id="transfer" name="transfer" disabled="true" onclick="testTransfer();" />
+  <input type="button" value="恢复" id="reconnect" name="reconnect" disabled="true" onclick="phone.reconnect(true);" />
+  <input type="button" value="自动会议" id="autoConference" name="autoConference" disabled="true" onclick="if(phone.canConsult())phone.autoConference(dn.value);" />
+  <input type="button" value="自动转接" id="autoTransfer" name="autoTransfer" disabled="true" onclick="if(phone.canConsult())phone.autoTransfer(dn.value);" />
+  <input type="button" value="切换" id="alternate" name="alternate" disabled="true" onclick="phone.alternate();" />
+  <input type="button" value="监听" id="monitor" name="monitor" disabled="true" onclick="phone.monitor(dn.value);" />
+  <input type="button" value="指导" id="guide" name="guide" disabled="true" onclick="phone.guide(dn.value);" />
+  <input type="button" value="接管" id="takeOver" name="takeOver" disabled="true" onclick="phone.takeOver(dn.value);" />
+   -->
+  
+  
+  
+  <textarea id="textarea1" name="textarea1" wrap="OFF" style="width: 100%; height: 150px;">
+phone.config({
+  dn:"2011"
+});
+</textarea>
+  <input name="button1" type="button" value="执行脚本!" onClick="eval(textarea1.value);" />
+  <textarea id="textarea2" name="textarea2" wrap="OFF" style="width: 100%; height: 150px;">
+phone.offHook();
+</textarea>
+  <input name="button2" type="button" value="执行脚本!" onClick="eval(textarea2.value);" />
+  <textarea id="textarea3" name="textarea3" wrap="OFF" style="width: 100%; height: 150px;">
+</textarea>
+  <input name="button3" type="button" value="执行脚本!" onClick="eval(textarea3.value);" />
+</body>
+</html>

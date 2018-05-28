@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>综合</title>
+  <script type="text/javascript" src="../RESTon.js"></script>
+  <script type="text/javascript" src="../main/js/domain.js"></script>
+</head>
+<body>
+  <div id="inbody" class="easyui-layout" data-options="fit:true,border:false">
+    <!--left-->
+    <div id="left-box" data-options="region:'west',split:true,border:false" style="width:260px;">
+      <div id="bb" class="easyui-layout" data-options="fit:true,border:false">
+        <!--left top button&&search-->
+        <div data-options="region:'north',border:false" class="tree-toptoolbox">
+          <a href="javascript:void(0)" class="icon-shuaxin" onclick="tree_reload('#tree')"></a>
+          <a href="javascript:void(0)" class="icon-zhankai" onclick="tree_slide('#tree')"></a>
+          <span style="float:left;margin:5px 5px 0 0">
+            <input id="search" class="easyui-textbox" data-options="prompt:'请输入查询内容'" style="width:130px;" />
+          </span>
+          <a href="javascript:void(0)" id="searchBtn" class="icon-sousuo" onclick="treeFilter('#tree',$('#search').val())"></a>
+       </div>
+        <!--left center-->
+        <div data-options="region:'center',split:true,border:false">
+          <div class="easyui-layout" data-options="fit:true,border:false">
+            <!--tree-->
+            <div id="tree-box" data-options="region:'center',split:true,border:true">
+              <ul id="tree" class="common-tree"></ul>
+            </div>
+
+            <!--open/close left-bottom-info-->
+            <div data-options="region:'south',border:false" style="height:5px;max-height:5px;">
+              <span id="close-left-bottom" style="display:none;" onclick="o_c_btn('close','left-bottom',$(this))"></span>
+              <span id="open-left-bottom" onclick="o_c_btn('open','left-bottom',$(this));"></span>
+            </div>
+          </div>
+        </div>
+
+        <!--left-bottom-info-->
+        <div id="left-bottom" data-options="region:'south',split:true,closed:true" style="height:100px;max-height:300px;">
+        </div>
+      </div>
+    </div>
+
+    <!--right content-->
+    <div data-options="region:'center',split:true,border:false">
+      <div id="tabbox" class="easyui-layout" data-options="fit:true,split:true,border:false">
+        <!--open/close list-tree-->
+        <div data-options="region:'west',border:false" style="width:5px;max-width:5px">
+          <span id="close-left-box" onclick="o_c_btn('close','left-box',$(this))"></span>
+          <span id="open-left-box" onclick="o_c_btn('open','left-box',$(this))"style="display:none"></span>
+        </div>
+        <!--right tabs-->
+        <div data-options="region:'center',split:true" style="-moz-box-sizing:border-box;">
+          <div id="tab-box" data-options="fit:true,border:false" class="easyui-tabs">
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="contextMenu" class="easyui-menu" style="display:none;width:150px;">   
+    <div onclick="$('#tab-box').tabs('updateCurrent')">刷新当前标签页</div> 
+    <div onclick="$('#tab-box').tabs('closeCurrent')">关闭标签页</div>
+    <div onclick="$('#tab-box').tabs('closeOther')">关闭其他标签页</div> 
+    <div onclick="$('#tab-box').tabs('closeLeft')">关闭左侧标签页</div> 
+    <div onclick="$('#tab-box').tabs('closeRight')">关闭右侧标签页</div> 
+    <div class="menu-sep"></div>   
+    <div onclick="$('#tab-box').tabs('closeAll')">关闭所有标签页</div>  
+  </div>
+  <script>
+    window['domain']='multiple';
+    function openTab(options){
+      if ($("#tab-box").tabs("exists", options.title)) {
+        $("#tab-box").tabs("select", options.title)
+      } else {
+        if(options.inner){
+          options.href=options.url;
+          $("#tab-box").tabs("add", options)
+        }else{
+          var url = options.url;
+          delete options["href"];
+          options.content = '<iframe src="' + url + '" scrolling=auto frameborder=0 style="display:block;width:100%;height:100%;"></iframe>';
+          $("#tab-box").tabs("add", options)
+        }
+      }
+    }
+    RESTon.at("multiple").on("OpenTab",function(event,options){
+      openTab(options);
+    });
+   
+    $(function(){
+      $("#search").siblings('span').children('.textbox-text').keydown(function(event){
+        event=event||window.event;
+        if(event.keyCode==13){
+          $('#searchBtn').click();
+        };
+      });
+      $("#tree").tree({
+        url:'tree-data.json',
+        method:'get',
+        loadFilter : function(data) {
+          return authTreeCheck(data);
+        },
+        onClick : function(node){
+          if(node.url){
+            var options={
+                title : node.text,
+                closable : true,
+                url : node.url,
+                inner : node.inner,
+                param : {id: node.id}
+            }
+            openTab(options);
+          }else{
+            $("#tree").tree("toggle",node.target);
+          }
+        }
+      });
+      $("#tab-box").tabs({
+        onSelect : function(title,index){
+          var tab = $('#tab-box').tabs('getSelected').panel('options').param;
+          var node = $('#tree').tree('find', tab.id);
+          $('#tree').tree('select', node.target);
+        },
+        onContextMenu : function(e,title,index){
+          e.preventDefault();
+          $("#tab-box").tabs('select',index)
+          $('#contextMenu').menu('show', {    
+            left: e.pageX,    
+            top: e.pageY    
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

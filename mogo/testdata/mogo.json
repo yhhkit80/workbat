@@ -1,0 +1,897 @@
+{
+		"multiple":true,
+		"collectsituation":"",
+		"publicsecurity":{
+				"match":"1",
+				"img":"/9j/4AAQSkZJRgABAgAAAQABAAD//gAKSFMwMQKOBQ96BgDblwD/2wBDAA4JCgwKCQ4MCwwPDg4QFCIWFBMTFCoeHxkiMSs0MzArMC82PU5CNjpKOy8wRF1FSlFTWFhYNUFgZ19VZk5WWFT/2wBDAQ4PDxQSFCgWFihUODA4VFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFT/wAARCAB2AGADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDut2oWvMipdxjqUG2T646H6D2q1bTpdQJNFna44yOazL7VHe1Uwq9uj9ZJMBsf7Izk9ev/AOsRWs97LAsOm2/lQLwJJOT1OTzx9QAaANuR0jQvIyoo6ljgCs+fXLaN2SJXnYAn5Bxx7/h1qrd2Ntaq95qt4ZVUfxfKO/HX9BiuQ1fxc7b4NMjWzgwFLAfO49z/AJ+tCVwOnuvEE6EI729oWyMu2WXnuO3pyKzLjWNO+f7bqEkshAOE+7nn6+p9K4Oe6Z8nLMzHkkkk1WDknDZxntVcgHqcPibQbYjyggKnhgvOMZJz1rXsdc07UDtt7lGY/wAOcGvFg3YE4+tSRXMkTBkYgg5BBwaOUD3YEEcUtedeHfHMluqwX6GZBgeYDhh9R0P6V39tcxXcCTQuHRhkEVLTW4E1FFFAGRq9vM15DciA3MMa8xA98+n5flzQuv2cKbZo5LcIMNlflTHbjn26Uk1xqGmvHLdyLcQMdrbQAQcfQe//ANaq3jOaP+xgvDiVgVPUEdcigDifEmvtq10zGTEKk7E9B/iawHYMeowKtT26MxyoGPTio7fTPPfAzgd60WiGk29CptZjkAn3qQ20nl7wpwODXQWmgqsfDuG69eKmfRplGEmBB65XtWbrK9jRUnbU5JgRk4xSA4OPyrXvdLuId24IR61lyI6jBQgdM9q0jJNEONhY2Iwc9K7PwT4nSyk+x3soWBuVY/wt/wDXrio4y/LNkHsKs26iNsqOVPFNq6JPZVvp7jDWdqXiLY8x22jrzgdce/6Uv2e9n/4+LlYl6FYBjPvuPIqv4Xvmv9Gglf76jax9SP8A62K1qyAyY9PuL2dbjUioCY2QpyBz369cVmePJALWBSOckg/lXUVzHjqPfb27Y6FgT7cULcDgHOSAc88fjmtvTLPy1DEcnP61RsrdZr5FIyoyT74rojGwU7AAAMkmlVfRG1JdWSwqFUAjpRdM0Vs8kaBmXnBFU/tslqy7lSUdwjZq4sl1fKRDbiFCOWkHUf59jXPyWNuYom0twfOnkE2eAzEbe/SsfUokuiy2yF2P8WOK6G50eJEJzJJIey4UflVAWeoouFWJV9GGP5VUbrW5EtVaxyZj8ldrDnJyKegAcEHg8GtLUbK4BcyRIc/3eOfxrMjZlIVkY/TmuuMro55Kx6h4FQx6GM95Cf0FdDXOeFb+G30OBbjfCSTt3IeR7VuwXUFyP3MqucZxnn8utZvcRTl1SW1wbyyeJG4DK4fn0rI8U6lZXFjtVmd1OVwuOxz1/D86sPbrNJ959Ruf4trYjTIz1+uehH4VJcaX9m07AIZ85kIHrxj6UXsOKuzgtJW6m1HESCPCdX7VvHTJXUvLIXkPTB4FM0yDydRkB4JAx71vRKueazqPU3gtDJs7e6tJ3JYeUV+VVAzn3OOn51dS5YnBUA45x0zVt1UdBz6ms5zudlTJ55NZydzVJCyXTltoU5J6gDgetVof7SAdptj/ADAKAByO5yOnbjmpQGjmAfrnArRQqRgjFKLsrCZl3MImhO5cHHI9K4/ySt8YyDkPjH413tyoHSuRkdG1g+UplYyADb3rak7XMaiPStHAXS7YLjAQdBim3y6fHzPsikJ3BkGHz68c1SgtdUltIk3pbqoGFBKk+/GT36VctdHt4PmkHnP6sOPyqzEuxxRwrtijVATnCjApXUOpVhkEc1mHR5UJEF/NGnGBye2OxHpUiWN9EAqaixBPO+PJHHuTQBl3NiYdQTC8ZIDY6g+tOwVYjJGDUWtTXsMf/IQt2ZHyuByMHuAOD9aqNPqMrr+4ChupZCB6HP4+lZyRvCd9GabuAhPU4rN+0C3kVWljjGSQScZqvINSPyuWZO+xlUn8apLK6P8AJpzkg5y+Sc+ucVna5smaEuoRzShY90+cZKr9365q0kl3Mpz5duMYH8Tf4VltqCxyqJYXjB9VxWjbXMUq/u3DcdD1FDTRLRDPYyTo4ed5ZDyg6Ln6f560vhmO2spS11E6OGJ3Fe/v3q08620Ety4yI1JA9T2H54rS8OBLnRYfORXwTkMM85P+NaQvYwm9TTguoLgfuZVc4zjPP5damqlNpVpLk+VsY90OMfh0qH+xlj5trmaJ+hOe34YrQzJFub6cfubVYRnhp26j/dHINK2mifaby4ln2/w8Kp69h9avUUAQrawJkpDGhIxlVArEnu4X84RkNGZGwR2PBP4ZNaOs3qWNhK7NhmUhR3JrhtGv1YSwyNz5hYZ9wB/Spkny6F09ZG0JQxIBBpfKWTBPH44rNupI4GLJKMj+Ec1CupXjDbFblcjIdh2rnOq5tGFIlLs20DuxrIuHje6T7INhQ4Z1HH+ev1qILPK+64DufTOKnihZ2LMAq9dqjAp7EvU0PtVtNPbWkzFUmYqeAQcjvnt0rqrS1is4RFCu1R2rzLUrjGpQKp+5zx254/lXptpL59rFJ/fQH9K6Ip8qOaW5PRRVOfVLSEf60OcZwnP69KZICe9VgrWSuBjc6SjB9cA1Wl8Q2UDYl8xMfe3Dlee4zXMarr95cgjz/KUjBSPgdO/r+tUojBa2hubpS7OfkQnl8dyew/z9KUWBY8T+KYtRQW1rHtUH/WOea5WCOXzz5jnB7L3qW4uRKzHAAJ+72qkx8t/MjJQg546VfLZDTsztNHMDxbQg3r/EeTWjHED1HI9K5fS73y2inJ2pJ1zxXRnULdcbC0jE4wozXDONmdUXoSyxKAcDmqd7PHaW5LELxRPPeFd7KsCYzk8muS1KUyyO8sjyBeFBPU9qIQ5mJuyuQyXwkvGlY5OePYV6Vod5fXmj232WFUUDaZGYHv1wf/r15bbqvmKCQpJHJ4x9a6eyv9Q0X92HaMZ47qR6g9CPeu1x0SOVvU7pNKeZg97cNKQSdgPA59fT6AVbhsLWBt0cK5yDk84+melc5pvjFHwt2o/3l4P5V0dpfW16m63lVx3API/CoaaA4MQJI6RqigkgZIzWPrlz5t3JGoISE+Uo+hOfzOT+NFFaoXQxp59h24JNRSsQAX5J7dqKKARa0z55ljkZipG5QO3+cV29lNFDaK6xAEDGQOaKK5a2500inql+BbO7Bjge1cXNcF2J6c0UVVAK2yGbsECtPT9alswsUoM1q33oWOR+HofpRRXQznLerwLZzHy2baSOPryKistTmtZleJ3Vh3Boop9BI//Z"
+		},
+    "customer": {
+        "custname": "张三", 
+        "phone": "13312345678", 
+        "sex": "男", 
+        "age": "28", 
+        "birth": "1988-11-22", 
+        "certno": "430621198811221234", 
+        "bankcard": "", 
+        "censusaddr": "湖南 岳阳 岳阳县", 
+        "unitaddr": "上海市", 
+        "houseaddr": "上海市", 
+        "risklevel": "", 
+        "credit_history": [
+            {
+                "value": "50000", 
+                "name": "授信总额"
+            }, 
+            {
+                "value": "30000", 
+                "name": "授信已用额度"
+            }, 
+            {
+                "value": "2", 
+                "name": "授信帐户数"
+            }
+        ]
+    },
+    "mobilebill": {
+        "mobileinfo": {
+            "custname": "新", 
+            "opername": "移动", 
+            "provname": "上海", 
+            "match": true, 
+            "mark": "此号码暂无标识", 
+            "mobileage": "34", 
+            "mobileinterval": "2014-08~2016-02", 
+            "point": "3334", 
+            "phoneplan": "全球通"
+        }, 
+        "payments1": [
+            {
+                "date": "2016-07-03", 
+                "amount": "0.20", 
+                "paymentSource": "", 
+                "paymentType": ""
+            }, 
+            {
+                "date": "2016-07-03", 
+                "amount": "99.80", 
+                "paymentSource": "", 
+                "paymentType": ""
+            }, 
+            {
+                "date": "2016-09-02", 
+                "amount": "0.20", 
+                "paymentSource": "", 
+                "paymentType": ""
+            }, 
+            {
+                "date": "2016-09-02", 
+                "amount": "99.80", 
+                "paymentSource": "", 
+                "paymentType": ""
+            }, 
+            {
+                "date": "2016-11-03", 
+                "amount": "100.00", 
+                "paymentSource": "", 
+                "paymentType": ""
+            }, 
+            {
+                "date": "2016-12-02", 
+                "amount": "0.20", 
+                "paymentSource": "", 
+                "paymentType": ""
+            }, 
+            {
+                "date": "2016-12-02", 
+                "amount": "99.80", 
+                "paymentSource": "", 
+                "paymentType": ""
+            }
+        ], 
+        "bills_basic": [
+            {
+                "month": "2016-12", 
+                "total_amount": "88.83"
+            }, 
+            {
+                "month": "2016-11", 
+                "total_amount": "111.51"
+            }
+        ], 
+        "bills_detail": [
+            {
+                "month": "2016-12", 
+                "cell_operator": "移动", 
+                "cell_loc": "上海", 
+                "call_cnt": "17", 
+                "call_out_cnt": "8", 
+                "call_out_time": "35", 
+                "call_in_cnt": "9", 
+                "call_in_time": "23", 
+                "sms_cnt": "112", 
+                "net_flow": "234.00", 
+                "total_amount": "108.83"
+            }, 
+            {
+                "month": "2016-11", 
+                "cell_operator": "移动", 
+                "cell_loc": "上海", 
+                "call_cnt": "30", 
+                "call_out_cnt": "10", 
+                "call_out_time": "52", 
+                "call_in_cnt": "20", 
+                "call_in_time": "57", 
+                "sms_cnt": "147", 
+                "net_flow": "356.00", 
+                "total_amount": "88.83"
+            }
+        ]
+    }, 
+    "rating": {
+        "time": "2016-12-15", 
+        "level": "信用一般", 
+        "score": 756, 
+        "risklevel": "低风险", 
+        "dimensions": [
+            {
+                "value": 335, 
+                "avescore": 519, 
+                "max": 900, 
+                "detail": [
+                    {
+                        "title": "性别", 
+                        "score": -67, 
+                        "desc": "", 
+                        "value": "M"
+                    }, 
+                    {
+                        "title": "年龄", 
+                        "score": -223, 
+                        "desc": "", 
+                        "value": "25"
+                    }, 
+                    {
+                        "title": "是否本地工作居民", 
+                        "score": -57, 
+                        "desc": "", 
+                        "value": "504|1602"
+                    }, 
+                    {
+                        "title": "教育水平", 
+                        "score": -107, 
+                        "desc": "", 
+                        "value": "技术学校"
+                    }, 
+                    {
+                        "title": "行业", 
+                        "score": 162, 
+                        "desc": "", 
+                        "value": "教育"
+                    }, 
+                    {
+                        "title": "居住城市", 
+                        "score": -258, 
+                        "desc": "", 
+                        "value": "504-东莞市"
+                    }, 
+                    {
+                        "title": "配偶是否在职", 
+                        "score": -134, 
+                        "desc": "", 
+                        "value": ""
+                    }
+                ], 
+                "advice": "", 
+                "title": "身份特质"
+            }, 
+            {
+                "value": 547, 
+                "avescore": 520, 
+                "max": 900, 
+                "detail": [
+                    {
+                        "title": "首次支出对车价的占比", 
+                        "score": -89, 
+                        "desc": "", 
+                        "value": "0.30434782608695654"
+                    }, 
+                    {
+                        "title": "车辆类型", 
+                        "score": 133, 
+                        "desc": "", 
+                        "value": "3"
+                    }, 
+                    {
+                        "title": "车辆销售价", 
+                        "score": 141, 
+                        "desc": "", 
+                        "value": "115000"
+                    }, 
+                    {
+                        "title": "租赁期限", 
+                        "score": 4, 
+                        "desc": "", 
+                        "value": "24"
+                    }
+                ], 
+                "advice": "", 
+                "title": "融资信息"
+            }, 
+            {
+                "value": 532, 
+                "avescore": 514, 
+                "max": 700, 
+                "detail": [
+                    {
+                        "title": "最近6个月平均使用额度", 
+                        "score": 45, 
+                        "desc": "", 
+                        "value": "0"
+                    }, 
+                    {
+                        "title": "使用额度占比", 
+                        "score": 83, 
+                        "desc": "", 
+                        "value": ""
+                    }
+                ], 
+                "advice": "", 
+                "title": "信用往来"
+            }, 
+            {
+                "value": 537, 
+                "avescore": 503, 
+                "max": 600, 
+                "detail": [
+                    {
+                        "title": "负债笔数", 
+                        "score": 72, 
+                        "desc": "", 
+                        "value": ""
+                    }, 
+                    {
+                        "title": "最近6个月平均应还款额", 
+                        "score": 74, 
+                        "desc": "", 
+                        "value": ""
+                    }
+                ], 
+                "advice": "", 
+                "title": "负债情况"
+            }, 
+            {
+                "value": 564, 
+                "avescore": 507, 
+                "max": 600, 
+                "detail": [
+                    {
+                        "title": "贷款逾期笔数", 
+                        "score": 92, 
+                        "desc": "", 
+                        "value": ""
+                    }, 
+                    {
+                        "title": "贷记卡逾期账户数", 
+                        "score": 165, 
+                        "desc": "", 
+                        "value": ""
+                    }
+                ], 
+                "advice": "", 
+                "title": "履约情况"
+            }
+        ]
+    }, 
+    "user_behavior": {
+        "application_check": [
+            {
+                "check_point": "号码使用时长", 
+                "result": "长期使用(24个月以上，包含24)", 
+                "evidence": "认证时间2016年12月12日", 
+                "category": "号码绑定"
+            }, 
+            {
+                "check_point": "朋友圈在哪里", 
+                "result": "主要活跃在上海地区(居住地)", 
+                "evidence": "上海地区通话时间占比为81.69%", 
+                "category": ""
+            }, 
+            {
+                "check_point": "手机静默情况(24小时内无通话记通计为静默一天)", 
+                "result": "181天内有2天无通话记录", 
+                "evidence": "根据运营商详单数据，连续三天以上无通话记录0次", 
+                "category": ""
+            }, 
+            {
+                "check_point": "互通过电话的号码数量", 
+                "result": "数量众多（100以上，不含100）", 
+                "evidence": "互通过电话的号码有200个，比例为20.99%", 
+                "category": ""
+            }, 
+            {
+                "check_point": "登记人身份证号码和姓名是否匹配", 
+                "result": "无数据", 
+                "evidence": "运营商无法提供身份证信息", 
+                "category": "身份验证"
+            }, 
+            {
+                "check_point": "是否呼叫过订单联系人", 
+                "result": "是", 
+                "evidence": "发现用户与150000000(张德英)联系了100次", 
+                "category": "呼叫行为"
+            }, 
+            {
+                "check_point": "澳门电话号码通话情况", 
+                "result": "无通话记录", 
+                "evidence": "未发现澳门地区电话通话记录", 
+                "category": "呼叫行为"
+            }, 
+            {
+                "check_point": "110号码通话情况", 
+                "result": "多次通话(3次以上)", 
+                "evidence": "与110号码通话4次，共3分钟", 
+                "category": "呼叫行为"
+            }, 
+            {
+                "check_point": "120号码通话情况", 
+                "result": "多次通话(3次以上)", 
+                "evidence": "与120号码通话4次，共3分钟", 
+                "category": "呼叫行为"
+            }, 
+            {
+                "check_point": "律师号码通话情况", 
+                "result": "多次通话(3次以上)", 
+                "evidence": "与律师号码通话4次，共3分钟", 
+                "category": "呼叫行为"
+            }, 
+            {
+                "check_point": "法院号码通话情况", 
+                "result": "多次通话(3次以上)", 
+                "evidence": "与法院号码通话4次，共3分钟", 
+                "category": "呼叫行为"
+            }, 
+            {
+                "check_point": "夜间活动情况(23点-6点)", 
+                "result": "很少夜间活动(夜间通话比例低于20%)", 
+                "evidence": "晚间活跃频率占全天的0.51%", 
+                "category": ""
+            }, 
+            {
+                "check_point": "贷款类号码联系情况", 
+                "result": "偶尔被联系(联系次数在5次以上，包含5次，且主动呼叫占比20%-50%之间，包含20%))", 
+                "evidence": "联系列表：[中信信用卡]主叫2次共3分钟，被叫0次共0.0分钟", 
+                "category": "呼叫行为"
+            }, 
+            {
+                "check_point": "银行类号码联系情况", 
+                "result": "联系(联系次数在5次以上，包含5次，且主动呼叫占比20%-50%之间，包含20%)", 
+                "evidence": "", 
+                "category": "呼叫行为"
+            }, 
+            {
+                "check_point": "信用卡类号码联系情况", 
+                "result": "很少被联系(联系次数在5次以上，包含5次，且主动呼叫占比20%-50%之间，包含20%)", 
+                "evidence": "", 
+                "category": "呼叫行为"
+            }
+        ], 
+        "riskwarn": [
+            {
+                "state": "未出现", 
+                "name": "身份证", 
+                "riskrule": "车贷黑名单", 
+                "msg": ""
+            }, 
+            {
+                "state": "未出现", 
+                "name": "手机号", 
+                "riskrule": "车贷黑名单", 
+                "msg": ""
+            }, 
+            {
+                "state": "未出现", 
+                "name": "户籍地址", 
+                "riskrule": "车贷黑名单", 
+                "msg": ""
+            }, 
+            {
+                "state": "未出现", 
+                "name": "身份证", 
+                "riskrule": "P2P网贷黑名单", 
+                "msg": ""
+            }, 
+            {
+                "state": "未出现", 
+                "name": "身份证", 
+                "msg": "", 
+                "riskrule": "法院执行"
+            }, 
+            {
+                "state": "无数据", 
+                "name": "身份证", 
+                "riskrule": "法院失信", 
+                "msg": ""
+            }
+        ], 
+        "court_execution": [
+            {
+					    "id": 63180389,
+					    "caseCode": "(2013)甬海执民字第00306号",
+					    "caseState": "1",
+					    "execCourtName": "宁波市海曙区人民法院",
+					    "execMoney": 26383.6,
+					    "partyCardNum": "4306211988****1234",
+					    "pname": "张三",
+					    "caseCreateTime": "2013年03月06日"
+            }, 
+            {
+					    "id": 6903892,
+					    "caseCode": "(2011)甬宁民执字第02135号",
+					    "caseState": "2",
+					    "execCourtName": "宁海县人民法院",
+					    "execMoney": 25000,
+					    "partyCardNum": "4306211988****1234",
+					    "pname": "张三",
+					    "caseCreateTime": "2012年02月1日"
+            }
+        ], 
+        "court_dishonesty": [
+            {
+							"DUTY": "履行已生效法律文书判决内容",
+							"SEXY": "男",
+							"INAME": "张三",
+							"CARDNUM": "4306211988****1234",
+							"REGDATE": "20091012",
+							"AREANAME": "浙江",
+							"CASECODE": "(2009)甬海民执字第01557号",
+							"GISTUNIT": "宁波市海曙区人民法院",
+							"COURTNAME": "宁波市海曙区人民法院",
+							"PERFORMANCE": "部分未履行",
+							"PUBLISHDATE": "2009年11月07日",
+							"PARTYTYPENAME": "0",
+							"DISRUPTTYPENAME": "其它规避执行"
+            }, 
+            {
+							"DUTY": "履行已生效法律文书判决内容",
+							"SEXY": "男",
+							"INAME": "张三",
+							"CARDNUM": "4306211988****1234",
+							"REGDATE": "20131012",
+							"AREANAME": "浙江",
+							"CASECODE": "(2013)甬海民执字第02353号",
+							"GISTUNIT": "宁波市海曙区人民法院",
+							"COURTNAME": "宁波市海曙区人民法院",
+							"PERFORMANCE": "部分未履行",
+							"PUBLISHDATE": "2014年4月01日",
+							"PARTYTYPENAME": "0",
+							"DISRUPTTYPENAME": "其它规避执行"
+            }
+        ], 
+        "social_bilk": [
+            {
+							"age": "35",
+							"sex": "男",
+							"duty": "　被执行人张三偿付借款本金27万元及利息",
+							"flag": 0,
+							"name": "张三",
+							"count": 0,
+							"gistId": "(2015)温瑞马商初字第00058号",
+							"cardNum": "3303251982****5130",
+							"areaName": "浙江",
+							"caseCode": "(2015)温瑞执民字第04255号",
+							"caseType": 0,
+							"cityCode": "",
+							"gistUnit": "温州瑞安法院",
+							"shixinId": "3373875",
+							"browseNum": "53",
+							"courtName": "浙江省瑞安市人民法院",
+							"courtType": "最高人民法院",
+							"performance": "全部未履行",
+							"publishDate": "2016年02月15日",
+							"wholeCardNum": "",
+							"partyTypeName": "",
+							"caseCreateTime": "2015年09月01日",
+							"disruptTypeName": "违反财产报告制度,其他有履行能力而拒不履行生效法律文书确定义务"
+            }, 
+            {
+							"age": "35",
+							"sex": "男",
+							"duty": "　被执行人张三偿付借款本金12万元及利息",
+							"flag": 0,
+							"name": "张三",
+							"count": 0,
+							"gistId": "(2012)温瑞马商初字第00012号",
+							"cardNum": "3303251982****5130",
+							"areaName": "浙江",
+							"caseCode": "(2012)温瑞执民字第02345号",
+							"caseType": 0,
+							"cityCode": "",
+							"gistUnit": "温州瑞安法院",
+							"shixinId": "3373873",
+							"browseNum": "12",
+							"courtName": "浙江省瑞安市人民法院",
+							"courtType": "最高人民法院",
+							"performance": "全部未履行",
+							"publishDate": "2013年05月23日",
+							"wholeCardNum": "",
+							"partyTypeName": "",
+							"caseCreateTime": "2012年02月12日",
+							"disruptTypeName": "违反财产报告制度,其他有履行能力而拒不履行生效法律文书确定义务"
+            }
+        ], 
+        "carloan_blacklist": [
+            {
+                "AAMOUNT":"362160",
+                "ACERTNO":"4306211988****1234",
+                "ALOADDATE":"36",
+                "AMOBILENO":"13312345678",
+                "AUNITCITY":"2",
+                "AHOUSECITY":null,
+                "ADATASOURCE":null,
+                "ABLACKREASON":"收车",
+                "AFIMALLYADDR":"天津市河东区天山路远翠西里17号楼3门101号",
+                "AUNITPROVICE":"2",
+                "ACUSTOMERNAME":"张三",
+                "AHOUSEPROVICE":null,
+                "AREGISTERADDR":"天津市河东区香山道远翠西里17号楼3门101号",
+                "AOVERDUEAMOUNT":null,
+                "AOVERDUEDURATION":null
+            }, 
+            {
+                "AAMOUNT":"362160",
+                "ACERTNO":"4306211988****1234",
+                "ALOADDATE":"24",
+                "AMOBILENO":"13312345678",
+                "AUNITCITY":"2",
+                "AHOUSECITY":null,
+                "ADATASOURCE":null,
+                "ABLACKREASON":"卖车",
+                "AFIMALLYADDR":"天津市河东区天山路远翠西里17号楼3门101号",
+                "AUNITPROVICE":"2",
+                "ACUSTOMERNAME":"张三",
+                "AHOUSEPROVICE":null,
+                "AREGISTERADDR":"天津市河东区香山道远翠西里17号楼3门101号",
+                "AOVERDUEAMOUNT":null,
+                "AOVERDUEDURATION":null
+            }
+        ], 
+        "social_misconduct": {
+            "certNo":"4306211988****1234",
+            "certName":"张三",
+            "crimetime":"/未设置时间/",
+            "hethercrime":"比中前科、吸毒"
+        }, 
+        "net_negative_info": [
+            {
+                "keywords": "二手车", 
+                "search_words": "手机号", 
+                "content": "二手车。。。。", 
+                "searcher": "百度"
+            }, 
+            {
+                "keywords": "二手车", 
+                "search_words": "手机号", 
+                "content": "二手车。。。。", 
+                "searcher": "新浪"
+            }
+        ]
+    }, 
+    "black_agency": { }, 
+    "trip_info": [
+        {
+            "trip_type": "工作日", 
+            "trip_start_time": "2016-07-01 00:19:20", 
+            "trip_end_time": "2016-10-01 10:15:00", 
+            "trip_leave": "上海", 
+            "trip_dest": "上海"
+        }, 
+        {
+            "trip_type": "周末", 
+            "trip_start_time": "2016-10-01 10:17:12", 
+            "trip_end_time": "2016-10-01 10:17:12", 
+            "trip_leave": "上海", 
+            "trip_dest": "浙江"
+        }, 
+        {
+            "trip_type": "周末", 
+            "trip_start_time": "2016-10-01 12:22:31", 
+            "trip_end_time": "2016-10-01 14:42:58", 
+            "trip_leave": "浙江", 
+            "trip_dest": "江西"
+        }, 
+        {
+            "trip_type": "周末", 
+            "trip_start_time": "2016-10-01 15:01:49", 
+            "trip_end_time": "2016-10-06 09:50:36", 
+            "trip_leave": "江西", 
+            "trip_dest": "湖南"
+        }, 
+        {
+            "trip_type": "工作日", 
+            "trip_start_time": "2016-10-06 14:06:39", 
+            "trip_end_time": "2016-10-06 15:16:51", 
+            "trip_leave": "湖南", 
+            "trip_dest": "安徽"
+        }, 
+        {
+            "trip_type": "工作日", 
+            "trip_start_time": "2016-10-06 16:28:40", 
+            "trip_end_time": "2016-10-06 18:13:38", 
+            "trip_leave": "安徽", 
+            "trip_dest": "江苏"
+        }, 
+        {
+            "trip_type": "工作日", 
+            "trip_start_time": "2016-10-06 20:03:45", 
+            "trip_end_time": "2016-11-25 20:44:48", 
+            "trip_leave": "江苏", 
+            "trip_dest": "上海"
+        }
+    ], 
+    "mobile_detail": {
+        "collection_contact": [
+            {
+                "contact_name": "李四", 
+                "trans_start": "2016-07-09 21:41:16", 
+                "trans_end": "2016-12-11 13:31:33", 
+                "phone_num": "17712341234", 
+                "isVirtureOperator": false, 
+                "call_len": "546", 
+                "call_cnt": "27", 
+                "sms_cnt": "0", 
+                "call_in_cnt": "7", 
+                "call_out_cnt": "20", 
+                "phone_num_loc": "上海 电信"
+            }, 
+            {
+                "contact_name": "王二", 
+                "trans_start": "2016-08-24 09:24:25", 
+                "trans_end": "2016-12-14 09:47:53", 
+                "phone_num": "15512341234", 
+                "isVirtureOperator": false, 
+                "call_len": "286", 
+                "call_cnt": "21", 
+                "sms_cnt": "0", 
+                "call_in_cnt": "6", 
+                "call_out_cnt": "15", 
+                "phone_num_loc": "安徽省合肥市 移动"
+            }
+        ], 
+        "contact_list": [
+            {
+                "phone_num": "17712341234", 
+                "contact_name": "未知", 
+                "needs_type": "未知", 
+                "isVirtureOperator": false, 
+                "phone_num_loc": "上海 电信", 
+                "call_cnt": "211", 
+                "call_len": "3836", 
+                "call_out_cnt": "116", 
+                "call_in_cnt": "95", 
+                "trans_start": "2016-07-01 19:16:35", 
+                "trans_end": "2016-11-27 21:03:28", 
+                "call_out_len": "2150", 
+                "call_in_len": "1686", 
+                "contact_1m": "0", 
+                "contact_3m": "0", 
+                "contact_1w": "0"
+            }, 
+            {
+                "phone_num": "15512341234", 
+                "contact_name": "未知", 
+                "needs_type": "未知", 
+                "isVirtureOperator": false, 
+                "phone_num_loc": "上海 移动", 
+                "call_cnt": "86", 
+                "call_len": "1548", 
+                "call_out_cnt": "39", 
+                "call_in_cnt": "47", 
+                "trans_start": "2016-07-09 17:38:24", 
+                "trans_end": "2016-12-14 19:33:51", 
+                "call_out_len": "662", 
+                "call_in_len": "886", 
+                "contact_1m": "0", 
+                "contact_3m": "0", 
+                "contact_1w": "0"
+            }
+        ], 
+        "sms_list": [
+            {
+                "phone_num": "10658112", 
+                "contact_name": "未知", 
+                "isVirtureOperator": false, 
+                "phone_num_loc": "上海 移动", 
+                "sms_cnt": "21", 
+                "sms_out_cnt": "21", 
+                "sms_in_cnt": "0"
+            }, 
+            {
+                "phone_num": "15112341234", 
+                "contact_name": "未知", 
+                "isVirtureOperator": false, 
+                "phone_num_loc": "海南省海口市 移动", 
+                "sms_cnt": "3", 
+                "sms_out_cnt": "3", 
+                "sms_in_cnt": "0"
+            }
+        ], 
+        "contact_region": [
+            {
+                "region_loc": "上海", 
+                "region_uniq_num_cnt": "79", 
+                "region_call_in_cnt": "255", 
+                "region_call_in_cnt_pct": "51.00", 
+                "region_call_in_time": "4934", 
+                "region_call_in_time_pct": "51.59", 
+                "region_call_out_cnt": "245", 
+                "region_call_out_cnt_pct": "49.00", 
+                "region_call_out_time": "4629", 
+                "region_call_out_time_pct": "48.41", 
+                "region_avg_call_in_time": "19.35", 
+                "region_avg_call_out_time": "18.89"
+            }, 
+            {
+                "region_loc": "安徽省合肥市", 
+                "region_uniq_num_cnt": "1", 
+                "region_call_in_cnt": "255", 
+                "region_call_in_cnt_pct": "28.57", 
+                "region_call_in_time": "6", 
+                "region_call_in_time_pct": "14.34", 
+                "region_call_out_cnt": "15", 
+                "region_call_out_cnt_pct": "71.43", 
+                "region_call_out_time": "245", 
+                "region_call_out_time_pct": "85.66", 
+                "region_avg_call_in_time": "6.83", 
+                "region_avg_call_out_time": "16.33"
+            }
+        ]
+    }, 
+    "customer_behavior": {
+        "consumption": [
+            {
+                "name": "每月还贷能力", 
+                "state": "无数据", 
+                "msg": ""
+            }, 
+            {
+                "name": "是否有房", 
+                "state": "无数据", 
+                "msg": ""
+            }, 
+            {
+                "name": "房产预估购买时间", 
+                "state": "无数据", 
+                "msg": ""
+            }, 
+            {
+                "name": "房产估值（万元）", 
+                "state": "无数据", 
+                "msg": ""
+            }, 
+            {
+                "name": "有无汽车", 
+                "state": "无数据", 
+                "msg": ""
+            }, 
+            {
+                "name": "汽车预估购买时间", 
+                "state": "无数据", 
+                "msg": ""
+            }, 
+            {
+                "name": "汽车估值（万元）", 
+                "state": "无数据", 
+                "msg": ""
+            }, 
+            {
+                "name": "常驻城市", 
+                "state": "无数据", 
+                "msg": ""
+            }
+        ], 
+        "transaction": [
+            {
+                "name": "月均交易金额", 
+                "state": "无数据", 
+                "msg": ""
+            }, 
+            {
+                "name": "月均交易笔数", 
+                "state": "无数据", 
+                "msg": ""
+            }, 
+            {
+                "name": "单笔1万以上的交易数", 
+                "state": "无数据", 
+                "msg": ""
+            }, 
+            {
+                "name": "单笔5万以上的交易数", 
+                "state": "无数据", 
+                "msg": ""
+            }, 
+            {
+                "name": "夜消费金额占比", 
+                "state": "无数据", 
+                "msg": ""
+            }, 
+            {
+                "name": "网购月数", 
+                "state": "无数据", 
+                "msg": ""
+            }, 
+            {
+                "name": "网购主要品类", 
+                "state": "无数据", 
+                "msg": ""
+            }
+        ]
+    }, 
+    "datasource": [
+        {
+            "name": "用户信息", 
+            "state": "已采集", 
+            "msg": ""
+        }, 
+        {
+            "name": "车贷黑名单", 
+            "state": "已采集", 
+            "msg": ""
+        }, 
+        {
+            "name": "P2P网贷黑名单", 
+            "state": "已采集", 
+            "msg": ""
+        }, 
+        {
+            "name": "信用报告", 
+            "state": "未采集", 
+            "msg": ""
+        }, 
+        {
+            "name": "法院执行", 
+            "state": "已采集", 
+            "msg": ""
+        }, 
+        {
+            "name": "法院失信", 
+            "state": "已采集", 
+            "msg": ""
+        }, 
+        {
+            "name": "社会赖账", 
+            "state": "未采集", 
+            "msg": ""
+        }, 
+        {
+            "name": "身份验证", 
+            "state": "未采集", 
+            "msg": ""
+        }, 
+        {
+            "name": "互联网手机卫士", 
+            "state": "已采集", 
+            "msg": ""
+        }, 
+        {
+            "name": "移动运营商数据", 
+            "state": "已采集", 
+            "msg": ""
+        }, 
+        {
+            "name": "银联卡消费数据", 
+            "state": "未采集", 
+            "msg": ""
+        }, 
+        {
+            "name": "淘宝网", 
+            "state": "未采集", 
+            "msg": ""
+        }, 
+        {
+            "name": "金融机构黑名单", 
+            "state": "未采集", 
+            "msg": ""
+        }
+    ]
+}

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>收车公司维护</title>
+  <script type="text/javascript" src="../../../RESTon.js"></script>
+  <script type="text/javascript" src="../testdata.js"></script>
+  <script type="text/javascript" src="../js/fetchCompany.js"></script>
+</head>
+<body >
+
+  <form class="forminput" id="carInfoForm" method="post" > 
+           <table>
+            <tr> 
+             <td><input name="ID" id="idAdd" style="display: none;" ></input></td>
+            </tr>
+              <tr>
+              <td align="right"><label>收车公司名称：</label></td>
+                <td><input id="comname" name="ASCGSQC" class="easyui-textbox" data-options="required:true"></input></td>
+              <td align="right"><label>收车公司简称：</label></td>
+                <td><input id="simpname" name="ASCGSJC" class="easyui-textbox" data-options="required:true"></input></td>
+               </tr>
+               <tr>
+                  <td align="right">收款银行：</td>
+                <td><input name="ASCGSSKYH" class="easyui-textbox" data-options="required:true"></input></td>
+                <td align="right">收款账号：</td>
+                <td><input name="ASCGSSKZH" class="easyui-textbox" data-options="required:true"></input></td>
+               </tr>
+               <tr>
+                  <td align="right">收款银行开户行：</td>
+                <td><input name="ASCGSKHH" class="easyui-textbox" data-options="required:true"></input></td>
+                <td align="right">收款银行户名：</td>
+                <td><input name="ASCGSSKHM" class="easyui-textbox" data-options="required:true"></input></td>
+               </tr>
+               <tr>
+                <td align="right">备注：</td>
+                <td><input name="ABZ9" class="easyui-textbox" data-options="required:true,multiline:true,height:60,width:270"></input></td>
+               </tr>
+             </table>   
+          </form>
+          <div id="fileDia" ></div>
+</body>
+</html>

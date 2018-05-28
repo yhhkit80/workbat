@@ -1,0 +1,40 @@
+[{
+  "id" : 6,
+  "text" : "数据字典",
+  "auth" : "overall_dictmanager",
+  "url" : "../../multiple/dict/html/dict_manage.html"
+},{
+  "id" : 2,
+  "text" : "权限列表",
+  "auth" : "overall_authmanager",
+  "url" : "../../multiple/auth/html/auth_list.html"
+},{
+  "id" : 3,
+  "text" : "职能定义",
+  "auth" : "overall_funcmanager",
+  "url" : "../../multiple/auth/html/func_manager.html"
+},{
+  "id" : 4,
+  "text" : "角色定义",
+  "auth" : "overall_rolemanager",
+  "url" : "../../multiple/auth/html/role_manager.html"
+},{
+  "id" : 1,
+  "text" : "组织机构",
+  "auth" : "overall_orgmanager",
+  "url" : "../../multiple/org/org_manager.html"
+},{
+  "id" : 5,
+  "text" : "用户管理",
+  "auth" : "overall_usermanager",
+  "url" : "../../multiple/usermanage/html/userManage.html"
+},{
+  "id" : 7,
+  "text" : "个人信息维护",
+  "url" : "../../multiple/usermanage/html/selfInfomanager.html"
+},{
+  "id" : 9,
+  "text" : "机构城市定义",
+  "url" : "../../multiple/orgareamapper/html/orgarea_manager.html"
+}
+]

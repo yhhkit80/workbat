@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>经销商申请</title>
+  <script type="text/javascript" src="../RESTon.js"></script>
+</head>
+<body class="easyui-layout" data-options="fit:true">
+  <div data-options="region:'north',collapsible:false,border:false,height:150">
+    <div class="blue-title">请输入查询条件</div>
+    <form id="queryForm" class="forminput">
+      <table>
+        <tr>
+          <td class="labeltd">申请编号</td>
+          <td class="datatd"><input class="easyui-textbox" name="applyNo" /></td>
+          <td class="labeltd">客户姓名</td>
+          <td class="datatd"><input class="easyui-textbox" name="customerName" /></td>
+          <td class="labeltd">首付比例(%)</td>
+          <td class="datatd"><input class="easyui-numberbox" name="firstPct" /></td>
+        </tr>
+        <tr>
+          <td class="labeltd">租赁属性</td>
+          <td class="datatd"><input class="easyui-combobox" name="rentalType"
+          data-options="editable:false,panelHeight:'auto',panelMaxHeight:150,
+          valueField:'id',textField:'text',
+          data:[{id:'',text:'请选择...',selected:true},{id:1,text:'是'},{id:2,text:'否'}]" /></td>
+          <td class="labeltd">车辆类型</td>
+          <td class="datatd"><input class="easyui-textbox" name="carStyle" /></td>
+          <td colspan="2"></td>
+        </tr>
+        <tr>
+          <td class="labeltd">任务创建时间起</td>
+          <td class="datatd"><input class="easyui-datebox" name="startDate" /></td>
+          <td class="labeltd">任务创建时间起</td>
+          <td class="datatd"><input class="easyui-datebox" name="endDate" /></td>
+          <td class="datatd" colspan="2">
+            <a class="easyui-linkbutton" iconCls="icon-search" onclick="querySubmit()" style="margin-top:-3px;margin-left:30px;">查询</a>
+            <a class="easyui-linkbutton" iconCls="icon-delete" onclick="$('#queryForm').form('reset')" style="margin-top:-3px;margin-left:30px;">重置</a>
+          </td>
+        </tr>
+      </table>
+    </form>
+  </div>
+  <div data-options="region:'center',border:false">
+    <div data-options="fit:true,border:false" class="easyui-tabs">
+      <div title="个人任务队列" data-options="border:false" style="padding-top:5px;">   
+        <table id="queryResult" class="easyui-datagrid">
+          <thead>
+            <tr>
+              <th data-options="field:'ID',title:'操作',align:'left',formatter:fieldOper, width:100"></th>
+              <th data-options="field:'TASKNAME',title:'任务名称',align:'left', width:150"></th>
+              <th data-options="field:'NODENAME',title:'节点名称',align:'left',width:150"></th>
+              <th data-options="field:'TASKNUM',title:'待办任务数量',align:'left',width:100"></th>
+            </tr>
+          </thead>
+        </table>
+      </div> 
+    </div>
+    <div id="popDia"></div>
+  </div>
+<script>
+$(function(){
+  $('#queryResult').datagrid({ 
+      method: 'get',
+      url:'../data/home_datagrid.json',
+      fit : true,
+      fitColumns : true,
+      pagination : true,
+      border : false,
+      rownumbers : true,
+      singleSelect : true,
+      striped : true,
+  }).datagrid('getPager').pagination({
+    // 导出全部按钮
+    buttons : [ {
+      iconCls : 'icon-export-csv',
+      text : '导出',
+      handler : exportData
+    }]
+  });  
+});
+function fieldOper(value, row, index) {
+  return '<span style="color:#21ADCF;cursor:pointer;" onclick="openCaseDia(' + index + ')">' + '查看' + '</span>';
+}
+function viewRow(index){
+  openCaseProc($('#queryResult').datagrid('getRows')[index]);
+}
+function openCaseProc(row) {
+  RESTon.at('index').fire('OpenTab',
+    { url: '../../sales/index.html', 
+      closable : true, 
+      ID : row.ID, 
+      title : row.NODENAME, 
+      param : row
+    }
+  );
+};
+var initParam;
+function checkQueryDay(queryParam){
+  return false;
+}
+//列表查询
+function querySubmit() {
+  var queryParam = $('#queryForm').serializeObject();
+  if (queryParam.startDate && queryParam.endDate && !dataCompare(queryParam.startDate,queryParam.endDate)) {
+    $.messager.alert('提示', '结束日期不得早于开始日期！', 'info');
+    return false;
+  }
+  if(!(queryParam.startDate && !queryParam.endDate)) {
+    $.messager.alert('提示','请选择任务创建时间！','info');
+    return false;
+  };
+  initParam = queryParam;
+  // 列表查询
+  $('#queryResult').datagrid({
+    url : '../../data/home_datagrid.json',
+    queryParams : initParam
+  }).datagrid('getPager').pagination({
+    // 导出全部按钮
+    buttons : [ {
+      iconCls : 'icon-download',
+      text : '导出全部',
+      handler : exportData
+    } ]
+  });
+};
+//导出全部，功能块
+function exportData() {
+  if($('#export_down').length) $('#export_down').remove();
+  var rows = $('#queryResult').datagrid('getRows');
+  if(!rows.length || !initParam) {
+    $.messager.confirm('确认','没有查询条件，将导出所有数据，请确认！',function(flag){
+      console.log(flag)
+    });
+    //$.messager.alert('提示','没有符合条件的记录，请重新查询！','info');
+    return false;
+  };
+  var param = jQuery.extend(true,{}, initParam);
+  // 隐藏iframe传查询条件，返回csv文件
+  var data = JSON.stringify(param);
+  data = encodeURI(encodeURI(data));
+  var iframe = $('<iframe id="export_down">');
+  iframe.css({'display':'none'});
+  iframe.attr('target','_blank');
+  //iframe.attr('src',RESTon.rootPath('/reston/report/urgereport/capacity/exportCapacity.jjs?data='+data));
+  $('body').append(iframe);
+};
+
+  //比较两个日期，返回第一个是否早于第二个
+function dataCompare(date1, date2) {
+  var a = date1.split('-');
+  var b = date2.split('-');
+  date1 = new Date(a[0], (a[1] - 1), a[2]);
+  date2 = new Date(b[0], (b[1] - 1), b[2]);
+  return (date1 <= date2);
+}
+//打开申请弹窗
+function openCaseDia(index) {
+  $('#queryResult').datagrid('selectRow', index);
+  var row = $('#queryResult').datagrid('getSelected');
+  diaOpen({
+    title : '测试弹窗',
+    href : 'dialog.html',
+    initFn : function(){
+      $('#dialogForm').form('load',row);
+    },
+    buttons : [ {
+      iconCls : 'icon-save',
+      text : '保存',
+      handler : saveDiaData
+    }, {
+      iconCls : 'icon-clear',
+      text : '取消',
+      handler : closeDia
+    } ]
+  });
+};
+function saveDiaData(){
+  console.log('save');
+}
+function closeDia(){
+  $('#popDia').dialog('close');
+  $('#popDia').empty();
+}
+//根据传入参数打开弹窗
+function diaOpen(options) {
+  $('#popDia').empty();
+  $('#popDia').dialog({
+    width : 600,
+    height : 300,
+    title : options.title,
+    href : options.href,
+    onLoad : options.initFn,
+    draggable : true,
+    closed : true,
+    modal : true,
+    buttons : options.buttons
+  })
+  $('#popDia').dialog('open');
+};
+// 关闭弹窗
+function closeDia() {
+  $('#popDia').dialog('close');
+  $('#popDia').empty();
+};
+</script>
+</body>
+</html>

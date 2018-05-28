@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>首页</title>
+  <script>
+  window.RESTon_root = true;
+  
+  </script>
+<script type="text/javascript" src="RESTon.js"></script>
+<script type="text/javascript" src="ckeditor/ckeditor.js"></script>
+<script type="text/javascript">
+function load(){
+  var editor = CKEDITOR.replace( 'editer', 
+     {width: 500,
+      height:100
+  });
+}
+
+</script>
+</head>
+<body onload="load()">
+ <textarea name="editer" rows="10" cols="10"></textarea>
+</body>
+</html>

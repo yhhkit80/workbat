@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>收款信息维护</title>
+  <script type="text/javascript" src="../../../RESTon.js"></script>
+  <style>
+    #queryForm td>span {margin: 0 5px; width: 40px;}
+    #queryForm .symbol {width: 40px; }
+  </style>
+</head>
+<body style="min-width: 800px;">
+  <div class="easyui-layout" data-options="fit:true,border:false">
+    <div data-options="region:'north',title:'查询条件',split:true,hideCollapsedContent:false,border:false" style="height:120px;">
+      <form id="queryForm" class="forminput">
+        <table>
+          <tr>
+            <td><label>收车公司编号：</label></td>
+            <td><input class="easyui-textbox" name="val1" /></td>
+          </tr>
+        </table>
+        <div class="btn-box">
+           <a class="easyui-linkbutton btn" id="queryCommit" data-options="iconCls:'icon-search'">查询</a>
+           <a class="easyui-linkbutton r_btn" id="queryReset" data-options="iconCls:'icon-clear'">重置</a>
+        </div>
+      </form>
+    </div>
+    <br>
+    <div data-options="region:'center',split:true,border:false">
+    <div id="codeLayout" class="easyui-layout" fit="true">
+    <div data-options="region:'center',title:'查询结果',border:false">
+      <table id="queryResult" data-dojo-attach-event='onChange:onSelect'>
+        <thead>
+          <tr>
+            <th data-options="field:'ID',title:'序号',align:'center'"></th>
+            <th data-options="field:'ASCGSID',title:'收车公司编号',align:'center'"></th>
+            <th data-options="field:'ASCGSQC',title:'收车公司名称',align:'center'"></th>
+            <th data-options="field:'ASCGSJC',title:'收车公司简称',align:'center'"></th>
+            <th data-options="field:'ASCGSSKYH',title:'收车公司收款银行',align:'center'"></th>
+            <th data-options="field:'ASCGSSKZH',title:'收车公司收款账号',align:'center'"></th>
+            <th data-options="field:'ASCGSKHH',title:'收车公司开户行',align:'center'"></th>
+            <th data-options="field:'ASCGSSKHM',title:'收车公司收款户名',align:'center'"></th>
+            <th data-options="field:'AQYBZ',title:'账户是否启用',align:'center'"></th>
+            <th data-options="field:'ABZ9',title:'备注',align:'center'"></th>
+          </tr>
+        </thead>
+        </table>
+        <div id="userTb" style="height: auto">
+            <a class="easyui-linkbutton"  data-options="iconCls:'icon-add'" onclick="OpenFrame()">增加</a>
+            <a class="easyui-linkbutton"  data-options="iconCls:'icon-remove'" onclick="deleteBtn()">删除</a>
+        </div>
+      </div>
+    </div>
+   </div>
+   <div id="popDia"></div>
+  </div>
+  <script type="text/javascript">
+  $('#queryResult').datagrid({
+    url : RESTon.rootPath('/reston/tsr/manager/fetchcompany/queryBankInfo.jjs'),
+    method : 'POST',
+    toolbar : '#userTb',
+    fit : true,
+    fitColumns : true,
+    singleSelect : true,
+    border : false,
+    rownumbers : true,
+    pagination : true,
+    pageNumber : 1,
+    pageSize : 200,
+    pageList : [ 50, 100, 200, 300 ],
+  });
+  $('#queryCommit').click(querySubmit);
+  function querySubmit() {
+    initParam = $('#queryForm').serializeObject();
+    $('#queryResult').datagrid('reload',initParam);
+  };
+  $('#queryReset').click(function() {
+    $('#queryForm').form('reset');
+  });// 重置查询条件
+  
+  function deleteBtn(){
+    var row = $('#queryResult').datagrid('getSelected');
+    if (row) {
+      $.messager.confirm('确定删除', '您确定删除所选记录？', function(b) {
+        if (b) {
+          var editData = {id:row.ID};
+          $.ajax({
+            url : RESTon.rootPath("/reston/tsr/manager/fetchcompany/delBankInfo.jjs"),
+            type : "post",
+            data : editData,
+            dataType : "json",
+            success : function(data) {
+              if(data.result="success"){
+                $.messager.show({title : '提醒',msg : '操作成功。',timeout : 3000,showType : 'slide'});
+                reLoad();
+              }else{
+                $.messager.show({title : '提醒',msg : '操作失败。',timeout : 3000,showType : 'slide'});
+              }
+            },
+            error : function(xhr, status, msg) {
+              alert("错误：" + msg);
+            }
+          });
+        }
+      })
+    } else {
+      $.messager.alert('提示', '请选择所要删除的记录！', 'info');
+    }
+  };
+  function reLoad() {
+    $("#queryResult").datagrid('load');
+  };
+  function OpenFrame() {
+    openAddComInfoDia();
+  };
+  function openAddComInfoDia(){
+    var rowdata ={};
+    openDiaAdd({
+      title : '收款信息新增',
+      href : 'addAndModifyBank.html',
+      buttons : [ {
+        iconCls : 'icon-save',
+        text : '保存',
+        handler : saveAddCarInfo
+      }, {
+        iconCls : 'icon-clear',
+        text : '取消',
+        handler : closeDia
+      } ]
+    },rowdata);
+  };
+  function saveAddCarInfo() {
+    if(!$('#carInfoForm').form('validate'))
+      return;
+    var addCarInfo = $('#carInfoForm').serializeObject();
+    provinceName = $('#aszsf').combobox("getText");
+    cityName = $('#aszcs').combobox("getText");
+    addCarInfo.userId=userId;
+    addCarInfo.provinceName = provinceName;
+    addCarInfo.cityName = cityName;
+    $.messager.confirm('确认', '确认保存修改信息？', function(b) {
+      $.ajax({
+        url : RESTon.rootPath("/reston/tsr/manager/fetchcompany/insertCompany.jjs"),
+        type : "post",
+        data : addCarInfo,
+        async : false,
+        dataType : "json",
+        success : function(data) {
+          if(data.result="success"){
+            $.messager.show({title : '提醒',msg : '操作成功。',timeout : 3000,showType : 'slide'}); 
+            $('#queryResult').datagrid('load');
+            closeDia();
+          }else{
+            $.messager.show({title : '提醒',msg : '操作失败。',timeout : 3000,showType : 'slide'});
+          }
+        },
+        error : function(xhr, status, msg) {
+          alert("错误：" + msg);
+        }
+      });
+    });
+  };
+  function closeDia() {
+    $('#popDia').dialog('close');
+    $('#popDia').empty();
+  };
+  function openDiaAdd(options,rowdata) {
+    $('#popDia').empty();
+    $('#popDia').dialog({
+      width : 650,
+      height : 350,
+      title : options.title,
+      href : options.href,
+      draggable : true,
+      closed : true,
+//      modal : true,
+      resizable : true,
+      buttons : options.buttons,
+      onLoad:function(){
+        $('#carInfoForm').form('load',rowdata);
+        $('#idAdd').hide();
+      }
+    })
+    $('#popDia').dialog('open');
+  };
+  </script>
+ </body>
+</html>

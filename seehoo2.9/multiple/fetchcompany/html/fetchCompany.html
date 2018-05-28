@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>收车公司维护</title>
+  <script type="text/javascript" src="../../../RESTon.js"></script>
+  <script type="text/javascript" src="../testdata.js"></script>
+  <script type="text/javascript" src="../js/fetchCompany.js"></script>
+  <style>
+    #queryForm td>span {margin: 0 5px; width: 40px;}
+    #queryForm .symbol {width: 40px; }
+  </style>
+</head>
+<body style="min-width: 800px;">
+  <div class="easyui-layout" data-options="fit:true,border:false">
+    <div data-options="region:'north',title:'查询条件',split:true,hideCollapsedContent:false,border:false" style="height:120px;">
+      <form id="queryForm" class="forminput">
+        <table>
+          <tr>
+            <td><label>收车公司名称：</label></td>
+            <td><input class="easyui-textbox" name="val1" /></td>
+            <td><label>省份：</label></td>
+            <td><input class="easyui-combobox" id="symbol" name="symbol" /></td>
+          </tr>
+        </table>
+        <div class="btn-box">
+           <a class="easyui-linkbutton btn" id="queryCommit" data-options="iconCls:'icon-search'">查询</a>
+           <a class="easyui-linkbutton r_btn" id="queryReset" data-options="iconCls:'icon-clear'">重置</a>
+        </div>
+      </form>
+    </div>
+    <br>
+    <div data-options="region:'center',split:true,border:false">
+    <div id="codeLayout" class="easyui-layout" fit="true">
+    <div data-options="region:'center',title:'查询结果',border:false">
+      <table id="queryResult" data-dojo-attach-event='onChange:onSelect'>
+        <thead>
+          <tr>
+            <th data-options="field:'ID',title:'公司编号',align:'center'"></th>
+            <th data-options="field:'ASCGSQC',title:'收车公司名称',align:'center'"></th>
+            <th data-options="field:'ASCGSJC',title:'收车公司简称',align:'center'"></th>
+            <th data-options="field:'ASZSF',title:'所在省份',align:'center'"></th>
+            <th data-options="field:'ASZCS',title:'所在城市',align:'center'"></th>
+            <th data-options="field:'ASZDZ',title:'所在地址',align:'center'"></th>
+            <th data-options="field:'ASCGSFZSF',title:'收车公司负责省份',align:'center'"></th>
+            <th data-options="field:'ASCGSFZCS',title:'收车公司负责城市',align:'center'"></th>
+            <th data-options="field:'ASCGSFZR',title:'收车公司负责人',align:'center'"></th>
+            <th data-options="field:'ASCGSFZRLXFS',title:'收车公司负责人联系方式',align:'center'"></th>
+            <th data-options="field:'ASCGSYWSJH',title:'收车公司业务手机号',align:'center'"></th>
+            <th data-options="field:'ASCGSYWYX',title:'收车公司业务邮箱',align:'center'"></th>
+            <th data-options="field:'ASFSDHT',title:'是否收到合同',align:'center'"></th>
+            <th data-options="field:'ASFYJCHT',title:'是否已寄出合同',align:'center'"></th>
+            <th data-options="field:'ASCGSDJ',title:'收车公司等级',align:'center'"></th>
+            <th data-options="field:'FSCGSCGL',title:'收车公司成功率',align:'center'"></th>
+            <th data-options="field:'ISCPDSL',title:'收车派单数量',align:'center'"></th>
+            <th data-options="field:'ISCCGSL',title:'收车成功数量',align:'center'"></th>
+            <th data-options="field:'FDYCGL',title:'当月成功率',align:'center'"></th>
+            <th data-options="field:'IDYPDSL',title:'当月收车派单数量',align:'center'"></th>
+            <th data-options="field:'IDYCGSL',title:'当月收车成功数量',align:'center'"></th>
+<!--             <th data-options="field:'ASCGSSKYH',title:'收车公司收款银行',align:'center'"></th> -->
+<!--             <th data-options="field:'ASCGSSKZH',title:'收车公司收款账号',align:'center'"></th> -->
+<!--             <th data-options="field:'ASCGSKHH',title:'收款银行开户行',align:'center'"></th> -->
+<!--             <th data-options="field:'ASCGSSKHM',title:'收款银行户名',align:'center'"></th> -->
+            <th data-options="field:'ASCGSFJ',title:'收车公司附件',align:'center',formatter:attachView"></th>
+            <th data-options="field:'AQYBZ',title:'启用标志',align:'center'"></th>
+            <th data-options="field:'ABZ',title:'备注',align:'center'"></th>
+          </tr>
+        </thead>
+      </table>
+      <div id="userTb" style="height: auto">
+            <a class="easyui-linkbutton"  data-options="iconCls:'icon-add'" onclick="OpenFrame()">增加</a>
+            <a class="easyui-linkbutton"  data-options="iconCls:'icon-remove'" onclick="userRemoveR()">删除</a>
+            <a class="easyui-linkbutton"  data-options="iconCls:'icon-edit'" onclick="location='recBank.html'">收款信息维护</a>
+            <a class="easyui-linkbutton"  data-options="iconCls:'icon-edit'" onclick="userRemoveR()">收车人员维护</a>
+      </div>
+    </div>
+        </div>
+        </div>
+      <div id="popDia"></div>
+  </div>
+<script type="text/javascript">
+  var userId=RESTon.get("User").id;
+function reLoad() {
+  $("#queryResult").datagrid('load');
+};
+function cancel(){
+  $('#userinfo').form('clear');
+  $("#codeLayout").layout('collapse', 'west');
+};
+function userAppend() {
+  $('#queryResult').datagrid('unselectAll');
+  $('#userinfo').form('clear');
+  $("#codeLayout").layout('expand', 'west');
+};
+
+function userModi(){
+  var row = $('#queryResult').datagrid('getSelected');
+  if(row){
+    $('#dd').window('open');
+  }else{
+    $.messager.alert('提示', '请选择所要修改的记录！', 'info');
+  }
+};
+
+/* 删除 */
+function userRemoveR() {
+  var row = $('#queryResult').datagrid('getSelected');
+  if (row) {
+    $.messager.confirm('确定删除', '您确定删除所选记录？', function(b) {
+      if (b) {
+        var editData = {id:row.ID};
+        $.ajax({
+          url : RESTon.rootPath("/reston/tsr/manager/fetchcompany/delCompany.jjs"),
+          type : "post",
+          data : editData,
+          dataType : "json",
+          success : function(data) {
+            if(data.result="success"){
+              $.messager.show({title : '提醒',msg : '操作成功。',timeout : 3000,showType : 'slide'});
+              reLoad();
+            }else{
+              $.messager.show({title : '提醒',msg : '操作失败。',timeout : 3000,showType : 'slide'});
+            }
+          },
+          error : function(xhr, status, msg) {
+            alert("错误：" + msg);
+          }
+        });
+      }
+    })
+  } else {
+    $.messager.alert('提示', '请选择所要删除的记录！', 'info');
+  }
+};
+
+function OpenFrame() {
+  openAddComInfoDia();
+};
+
+$('#queryResult').datagrid({
+  onDblClickCell: function(index,field,value){
+    var row = $('#queryResult').datagrid('getSelected');
+    if(row==null){
+      $.messager.alert("系统提示", "请选择您要修改的数据！");
+      return;
+    }
+    openModifyCarInfoDia(index);
+  }
+  })
+ </script> 
+</body>
+</html>

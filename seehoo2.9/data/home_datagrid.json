@@ -1,0 +1,37 @@
+[{
+  "ID" : 1,
+  "TASKNAME" : "申请提报审批",
+  "NODENAME" : "确认并生成合同",
+  "TASKNUM": 1,
+  "url": "../../main/index/test1.html"
+},{
+  "ID" : 2,
+  "TASKNAME" : "申请提报审批",
+  "NODENAME" : "打印合同",
+  "TASKNUM": 2,
+  "url": "../../main/index/test2.html"
+},{
+  "ID" : 3,
+  "TASKNAME" : "申请抵押备案资料",
+  "NODENAME" : "分公司运营专员确认",
+  "TASKNUM": 2,
+  "url": "../../main/index/test2.html"
+},{
+  "ID" : 3,
+  "TASKNAME" : "车辆过户登记审批",
+  "NODENAME" : "分公司运营专员",
+  "TASKNUM": 1,
+  "url": "../../main/index/test2.html"
+},{
+  "ID" : 4,
+  "TASKNAME" : "付款审批流程",
+  "NODENAME" : "出纳审核",
+  "TASKNUM": 1,
+  "url": "../../main/index/test2.html"
+},{
+  "ID" : 5,
+  "TASKNAME" : "征信授权文件审核",
+  "NODENAME" : "征信授权文件重新上传",
+  "TASKNUM": 2,
+  "url": "../../main/index/test2.html"
+}]

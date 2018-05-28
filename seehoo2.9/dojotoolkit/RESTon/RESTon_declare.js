@@ -1,0 +1,1 @@
+require(["RESTon/core"],function(i){window.RESTon=i});if(!window.RESTonConfig||RESTonConfig.easyui!==false)require(["jquery/easyui/easyui"]);

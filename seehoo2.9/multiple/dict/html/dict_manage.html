@@ -1,0 +1,79 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>数据字典管理</title>
+  <script type="text/javascript" src="../../../RESTon.js"></script>
+  <script type="text/javascript" src="../js/dict_manage.js"></script>
+</head>
+<body>
+  <div id="dictLayout" class="easyui-layout" fit="true">
+    <!-- 字典类型表格 -->
+    <div data-options="region:'center',border:false,title:'字典类型管理 '">
+      <table id="dictTypeManage" class="easyui-datagrid" data-options="fitColumns:true,method : 'post',ctrlSelect : 'true',ctrlSelect : 'true'" fit="true" border="false">
+        <thead>
+          <tr>
+            <th data-options="field:'ADICTTYPEID',align : 'center',width:100">字典类型ID</th>
+            <th data-options="field:'ADICTTYPEDESC',align : 'center',width:100">字典类型描述</th>
+          </tr>
+        </thead>
+      </table>
+    </div>
+    <!-- 数据字典表格 -->
+    <div title="字典表管理" data-options="region:'east',split:true,collapsible:true,collapsed:true" style="width: 50%">
+      <table id="dictManage" class="easyui-datagrid" data-options="method:'post',fitColumns:true,ctrlSelect : 'true', ctrlSelect : 'true',toolbar:'#dictTb'" fit="true" border="false">
+        <thead>
+          <tr>
+            <th data-options="field:'aDictTypeID',align : 'center',width:100">字典类型ID</th>
+            <th data-options="field:'aDictValue',align : 'center',width:80">字典值</th>
+            <th data-options="field:'aDictRefValue',align : 'center',width:100">字典参考值</th>
+            <th data-options="field:'aDictText',align : 'center',width:100">字典TEXT</th>
+            <th data-options="field:'aDictDesc',align : 'center',width:100,formatter:descTipe">字典备用描述</th>
+            <th data-options="field:'aDictDispOrder',align : 'center',width:100">字典显示顺序</th>
+          </tr>
+        </thead>
+      </table>
+      <div id="dictTb">
+        <a class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true,auth:{authid:'o_d_adddict',type:'hide'}" onclick="dictAppend()">增加</a>
+        <a class="easyui-linkbutton" data-options="iconCls:'icon-remove',plain:true,auth:{authid:'o_d_deldict',type:'disable'}" onclick="dictRemove()">删除</a>
+      </div>
+    </div>
+  </div>
+  <!-- 新增/编辑字典窗口 -->
+  <div id="dictWindow" class="easyui-window" style="width: 500px; height: 372px; padding: 0px;" data-options="title:'管理数据字典',shadow:false,modal:true,closed:true,resizable:false,border:false,collapsible:false, minimizable:false">
+    <form id="dictForm" class="forminput">
+      <table>
+        <tr>
+          <td><label>字典类型ID：</label></td>
+          <td><input id="aDictTypeID"  readonly="readonly" name="aDictTypeID" class="easyui-textbox" type="text" data-options="required:true" /></td>
+        </tr>
+        <tr>
+          <td><label>字典值：</label></td>
+          <td><input  name="aDictValue" class="easyui-textbox" type="text" data-options="required:true" /></td>
+        </tr>
+        <tr>
+          <td><label>字典参考值：</label></td>
+          <td><input name="aDictRefValue" class="easyui-textbox" type="text" /></td>
+        </tr>
+        <tr>
+          <td><label>字典TEXT：</label></td>
+          <td><input  name="aDictText" class="easyui-textbox" type="text" data-options="required:true" /></td>
+        </tr>
+        <tr>
+          <td><label>字典备用描述：</label></td>
+          <td colspan="4"><textarea name="aDictDesc" type="text" style="height: 80px;padding:5px;font-size:12px;width:142px"></textarea></td>
+        </tr>
+        <tr>
+          <td><label>字典显示顺序：</label></td>
+          <td><input  name="aDictDispOrder" class="easyui-textbox" type="text" /></td>
+        </tr>
+      </table>
+      <div style="text-align: center; margin-top: 20px">
+        <a class="easyui-linkbutton" onclick="dictSubmit()" data-options="auth:{authid:'o_d_commitdict',type:'disable'}"iconCls="icon-save" style="width:60px">确定</a>
+        <a class="easyui-linkbutton" onclick="$('#dictWindow').window('close')" iconCls="icon-clear" style="margin-left:30px;width:60px">取消</a>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

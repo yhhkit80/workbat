@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>用户管理</title>
+<script type="text/javascript" src="../../../RESTon.js"></script>
+</head>
+<body class="b-html">
+  <div class="easyui-layout" fit="true">
+    <div data-options="region:'north',title:'用户查询',border:false" style="height: 82px;">
+      <form id="userSearchForm" class="forminput">
+        <table>
+          <tr>
+            <td><label>用户名：</label></td>
+            <td><input id="username" class="easyui-textbox" name="username"></td>
+            <td>
+              <a id="select" class="easyui-linkbutton"  data-options="iconCls:'icon-b-search'"  onclick="select()">查询</a>
+            </td>
+          </tr>
+        </table>
+      </form>
+    </div>
+    <div data-options="region:'center',title:'用户列表',split:true,border:false">
+      <table id="userManage" fit="true" border="false">
+        <thead>
+          <tr>
+            <th data-options="field:'AUSERTYPE',width:100,align:'center',formatter:RESTon.dictFormatter('aUserType')">用户类型</th>
+            <th data-options="field:'ALOGINID',width:100,align:'center'">用户ID</th>
+            <th data-options="field:'ANAME',width:100,align:'center'">姓名</th>
+            <th data-options="field:'ASEX',width:80,align:'center',formatter:RESTon.dictFormatter('aSex')">性别</th>
+            <th data-options="field:'ATEL',width:100,align:'right'">电话</th>
+            <th data-options="field:'ALOCALADDRESS',width:150,align:'center'">地址</th>
+          </tr>
+      </table>
+      <div id="userTb" style="height: auto">
+        <a class="easyui-linkbutton"  data-options="iconCls:'icon-add',plain:true,auth:{authid:'o_u_addusr',type:'disable'}" onclick="userAppend()">增加</a>
+        <a class="easyui-linkbutton"  data-options="iconCls:'icon-edit',plain:true" onclick="userUpdate()">修改</a>
+        <a class="easyui-linkbutton"  data-options="iconCls:'icon-remove',plain:true,auth:{authid:'o_u_delusr',type:'disable'}" onclick="userRemoveR()">删除</a>
+      </div>
+    </div>
+  </div>
+  <div id="popDia"></div>
+  <script type="text/javascript" src="../../../tbmp/js/validator.js"></script>
+  <script type="text/javascript">
+  var userId=RESTon.get("User").id;
+  $(function() {
+    //$.ajaxLoadingInfo();
+    $("#userManage").datagrid({
+      url :  RESTon.rootPath('/reston/common/user/queryUser.jjs'),
+      rownumbers : true,
+      fitColumns:true,
+      method : 'post',
+      toolbar : '#userTb',
+      pagination : true,
+      singleSelect : true,
+/*       onDblClickRow : function(rowIndex, rowData) {
+        userEdit(rowData);
+      }, */
+    });
+  });
+  // 打开弹窗
+  function openCaseDia(options) {
+    $('#popDia').empty();
+    //$('#queryResult').datagrid('selectRow', index);
+    $('#popDia').dialog({
+      width : 480,
+      height : 270,
+      title : '用户管理',
+      href : 'userInfoForm.html',
+      draggable : true,
+      closed : true,
+      modal : true,
+      onLoad : options.init
+    });
+    $('#popDia').dialog('open');
+  };
+  // 关闭弹窗
+  function closeDia() {
+    $('#popDia').dialog('close');
+    $('#popDia').empty();
+  }
+  function userUpdate() {
+    var row = $('#userManage').datagrid('getSelected');
+    if (row) {
+      userEdit(row);
+    } else {
+      $.messager.alert('提示', '请选择所要修改的记录！', 'info');
+    }
+  }
+  function userEdit(rowData){
+    openCaseDia({
+      init : function() {
+        $('#userinfo').form('clear');
+        $('#ALOGINID').textbox({editable:false}).textbox('disableValidation');
+        var user=getUser(rowData.ALOGINID);
+        $('#role').combobox('setValues',user.role);
+        if(user.dept)$('#AORGID').combotree('setValue',user.dept.AORGID);
+        $('#userinfo').form('load',user.detail);
+      }
+    });
+  }
+  function getUser(loginid){
+    var result={};
+    $.ajax({
+      url : RESTon.rootPath("/reston/common/user/detailUser.jjs"),
+      type : "post",
+      data : {ALOGINID:loginid},
+      async:false,
+      dataType : "json",
+      success : function(data) {
+       result=data;
+      },
+      error : function(xhr, status, msg) {
+        alert("错误：" + msg);
+      }
+    });
+    return result;
+  }
+  /* 添加用户 */
+  function userAppend() {
+    openCaseDia({
+      init : function() {
+        $('#userManage').datagrid('unselectAll');
+        $('#userinfo').form('clear');
+        $('#resetPassBtn').hide();
+        $('#ALOGINID').textbox({
+          editable : true
+        });
+        $('#AUSERTYPE').combobox('select','0');
+      }
+    });
+  }
+  /* 删除 */
+  function userRemoveR() {
+    var row = $('#userManage').datagrid('getSelected');
+    if (row) {
+      $.messager.confirm('确定删除', '您确定删除所选记录？', function(b) {
+        if (b) {
+          var editData = {ALOGINID:row.ALOGINID};
+          $.ajax({
+            url : RESTon.rootPath("/reston/common/user/delUser.jjs"),
+            type : "post",
+            data : editData,
+            dataType : "json",
+            success : function(data) {
+              if(data.result="success"){
+                $.messager.show({title : '提醒',msg : '操作成功。',timeout : 3000,showType : 'slide'});
+                $('#userinfo').form('clear');
+                $('#userManage').datagrid('load');
+                $("#userManage").datagrid("unselectAll");
+              }else{
+                $.messager.show({title : '提醒',msg : '操作失败。',timeout : 3000,showType : 'slide'});
+              }
+            },
+            error : function(xhr, status, msg) {
+              alert("错误：" + msg);
+            }
+          });
+        }
+      })
+    } else {
+      $.messager.alert('提示', '请选择所要删除的记录！', 'info');
+    }
+  }
+  /* 重新加载 */
+  function reLoad() {
+    $("#userManage").datagrid('load');
+  }
+  function save(){
+    if(!$('#userinfo').form('validate')) return;
+    var data=$('#userinfo').serializeObject();
+    data.userId=userId;
+    if(typeof data.role=='string') data.role=Array(data.role);
+    if(!$('#userManage').datagrid('getSelected')){
+      $.ajax({
+        url : RESTon.rootPath("/reston/common/user/insertUser.jjs"),
+        type : "post",
+        data : data,
+        dataType : "json",
+        success : function(data) {
+          if(data.result=='success'){
+            $.messager.show({title : '提醒',msg : '操作成功。',timeout : 3000,showType : 'slide'});
+            reLoad();
+            closeDia();
+          }else{
+            $.messager.show({title : '提醒',msg : '操作失败。',timeout : 3000,showType : 'slide'});
+          }
+        },
+        error : function(xhr, status, msg) {
+          alert("错误：" + msg);
+        }
+      });
+    }else{
+      var row = $('#userManage').datagrid('getSelected');
+      $.ajax({
+        url : RESTon.rootPath("/reston/common/user/updateUser.jjs"),
+        type : "post",
+        data : data,
+        dataType : "json",
+        success : function(data) {
+          if(data.result=='success'){
+            $.messager.show({title : '提示',msg : '保存成功！',timeout : 3000,showType : 'slide'});
+            reLoad();
+            closeDia();
+          }else{
+            $.messager.show({title : '提示',msg : '操作失败！',timeout : 3000,showType : 'slide'});
+          }
+        },
+        error : function(xhr, status, msg) {
+          alert("错误：" + msg);
+        }
+      });
+    }
+  }
+  function resetPass(){
+    var ALOGINID=$('#ALOGINID').textbox('getValue');
+    $.messager.confirm('确认', '确认重置该用户密码？', function(b) {
+      if(b){
+        $.ajax({
+          url : RESTon.rootPath("/reston/common/user/resetPassword.jjs"),
+          type : "post",
+          data : {userId:userId,ALOGINID:ALOGINID},
+          dataType : "json",
+          success : function(data) {
+            if(data.result=='success'){
+              $.messager.show({title : '提醒',msg : '操作成功。',timeout : 3000,showType : 'slide'});
+              reLoad();
+              closeDia();
+            }else{
+              $.messager.show({title : '提醒',msg : '操作失败。',timeout : 3000,showType : 'slide'});
+            }
+          },
+          error : function(xhr, status, msg) {
+            alert("错误：" + msg);
+          }
+        });            
+      }
+    })
+  }
+  /* 查询 */
+  function select() {
+    var searchData=$('#userSearchForm').serializeObject();
+    $("#userManage").datagrid('load', searchData);
+  }
+    </script>
+</body>
+</html>

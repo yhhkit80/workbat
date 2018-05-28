@@ -1,0 +1,1 @@
+define(["dojo/dom-construct"],function(o){var e=dojo.baseUrl+"../RESTon/phone/ccod/ccod.html";var i=o.toDom('<iframe src="'+e+'" style="position:absolute;visibility:hidden;"></iframe>');o.place(i,document.body,"last")});

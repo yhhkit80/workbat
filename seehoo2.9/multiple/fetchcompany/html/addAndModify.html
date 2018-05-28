@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>收车公司维护</title>
+  <script type="text/javascript" src="../../../RESTon.js"></script>
+  <script type="text/javascript" src="../testdata.js"></script>
+  <script type="text/javascript" src="../js/fetchCompany.js"></script>
+</head>
+<body >
+
+  <form class="forminput" id="carInfoForm" method="post" > 
+           <table id="addRow">
+            <tr> 
+             <td><input name="ID" id="idAdd" style="display: none;" ></input></td>
+            </tr>
+              <tr>
+              <td align="right"><label>收车公司名称：</label></td>
+                <td><input id="comname" name="ASCGSQC" class="easyui-textbox" data-options="required:true"></input></td>
+              <td align="right"><label>收车公司简称：</label></td>
+                <td><input id="simpname" name="ASCGSJC" class="easyui-textbox" data-options="required:true"></input></td>
+               </tr>
+              <tr>
+                <td align="right"><label>收车公司负责人：</label></td>
+                <td><input name="ASCGSFZR" class="easyui-textbox" data-options="required:true"></input></td>
+                <td align="right">收车公司负责人联系方式：</td>
+                <td><input name="ASCGSFZRLXFS" class="easyui-textbox" data-options="required:true"></input></td>
+              </tr>
+              <tr>
+                <td align="right"><label>所在省份：</label></td>
+                <td><input id="aszsf" class="easyui-combobox" name="ASZSF" data-options="valueField:'id',textField:'text'"/></td>
+                <td align="right"><label>所在城市：</label></td>
+                <td><input id="aszcs" class="easyui-combobox" name="ASZCS" data-options="valueField:'id',textField:'text'"/></td>
+               </tr>
+               <tr>
+                <td align="right"><label>所在地址：</label></td>
+                <td><input name="ASZDZ" class="easyui-textbox" data-options="required:true,width:270"></input></td>
+               </tr>
+                <tr>
+                <td align="right"><label>收车公司负责省份：</label></td>
+                <td><input class="easyui-combobox" name="ASCGSFZSF" /></td>
+                <td align="right"><label>收车公司负责城市：</label></td>
+                <td><input class="easyui-combobox" name="ASCGSFZCS" /></td>
+               </tr>
+               <tr>
+                <td align="right">收车公司业务手机号：</td>
+                <td><input name="ASCGSYWSJH" class="easyui-textbox" data-options="required:true"></input></td>
+                <td align="right">收车公司业务邮箱：</td>
+                <td><input name="ASCGSYWYX" class="easyui-textbox" data-options="required:true"></input></td>
+               </tr>
+               <tr>
+                  <td align="right">是否收到合同：</td>
+                <td><input name="ASFSDHT" class="easyui-combobox" data-options="required:true"></input></td>
+                <td align="right">是否已寄出合同：</td>
+                <td><input name="ASFYJCHT" class="easyui-combobox" data-options="required:true"></input></td>
+               </tr>
+               <tr>
+                <td align="right">收车公司等级：</td>
+                <td><input class="easyui-combobox" id="ALEVEL" name="ASCGSDJ" data-options="required:true"/></td>
+                <td align="right">启用标志：</td>
+                <td><input class="easyui-combobox" id="ASTATUS" name="AQYBZ" data-options="required:true"/></td>
+               </tr>
+<!--                <tr> -->
+<!--                   <td align="right">收款银行：</td> -->
+<!--                 <td><input name="ASCGSSKYH" class="easyui-textbox" data-options="required:true"></input></td> -->
+<!--                 <td align="right">收款账号：</td> -->
+<!--                 <td><input name="ASCGSSKZH" class="easyui-textbox" data-options="required:true"></input></td> -->
+<!--                </tr> -->
+<!--                <tr> -->
+<!--                   <td align="right">收款银行开户行：</td> -->
+<!--                 <td><input name="ASCGSKHH" class="easyui-textbox" data-options="required:true"></input></td> -->
+<!--                 <td align="right">收款银行户名：</td> -->
+<!--                 <td><input name="ASCGSSKHM" class="easyui-textbox" data-options="required:true"></input></td> -->
+<!--                </tr> -->
+<!--                 <tr> -->
+<!--                   <td class="easyui-linkbutton" data-options="iconCls:'icon-add'" onclick="addRow()" >新增</td> -->
+<!--                 </tr> -->
+<!--                </table> -->
+<!--                <table> -->
+               <tr>
+                <td align="right">备注：</td>
+                <td><input name="ABZ" class="easyui-textbox" data-options="required:true,multiline:true,height:60,width:270"></input></td>
+               </tr>
+               <tr>
+                  <td class="easyui-linkbutton"  data-options="iconCls:'icon-add'" onclick="openAttach()">附件上传</td>
+               </tr>
+             </table>   
+          </form>
+          <div id="fileDia" ></div>
+</body>
+</html>

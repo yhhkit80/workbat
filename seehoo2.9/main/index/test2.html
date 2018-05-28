@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>测试页2</title>
+<script type="text/javascript" src="../../RESTon.js" djConfig="parseOnLoad:true"></script>
+</head>
+<body class="easyui-layout header-blue-left" data-options="fit:true">
+  <div data-options="region:'north',collapsible:false,border:false,height:150">
+  
+    <div class="blue-title">请输入查询条件</div>
+    <form id="queryForm" class="forminput">
+      <table>
+        <tr>
+          <td class="labeltd">申请编号</td>
+          <td class="datatd"><input class="easyui-numberspinner" name="applyNo"/></td>
+          <td class="labeltd">客户姓名</td>
+          <td class="datatd"><input class="easyui-timespinner" name="customerName"/></td>
+          <td class="labeltd">首付比例(%)</td>
+          <td class="datatd"><input class="easyui-textbox" data-options="required:true,validType:'email'" /></td>
+        </tr>
+        <tr>
+          <td class="labeltd">租赁属性</td>
+          <td class="datatd"><input class="easyui-combobox" name="rentalType"
+          data-options="editable:false,panelHeight:'auto',panelMaxHeight:150,
+          valueField:'id',textField:'text',
+          data:[{id:'',text:'请选择...',selected:true},{id:1,text:'是'},{id:2,text:'否'}]"/></td>
+          <td class="labeltd">车辆类型</td>
+          <td class="datatd"><select id="cc" class="easyui-combotree" style="width:200px;"   
+        data-options="data: [{
+  id: 1,
+  text: 'Languages',
+  children: [{
+    id: 11,
+    text: 'Java'
+  },{
+    id: 12,
+    text: 'C++'
+  }]
+}],required:true"></select></td>
+          <td colspan="2"></td>
+        </tr>
+        <tr>
+          <td class="labeltd">任务创建时间起</td>
+          <td class="datatd">
+          
+           <select id="cc" class="easyui-combogrid" name="dept" style="width:250px;"   
+        data-options="    
+            panelWidth:450,    
+            value:'006',    
+            idField:'code',    
+            textField:'name', 
+            fitColumns: true,   
+            data:[{code:11,name:'name',addr:'addr',col4:'col'}],    
+            columns:[[    
+                {field:'code',title:'Code',width:60},    
+                {field:'name',title:'Name',width:100},    
+                {field:'addr',title:'Address',width:120},    
+                {field:'col4',title:'Col41',width:100}    
+            ]]    
+        "></select>  </td>
+          <td class="labeltd">任务创建时间起</td>
+          <td class="datatd"><input class="easyui-datebox" name="endDate"/></td>
+          <td class="datatd" colspan="2"><a class="easyui-linkbutton" iconCls="icon-search" 
+          onclick="" style="margin-top:-3px;margin-left:30px;">查询</a></td>
+        </tr>
+      </table>
+    </form>
+  </div>
+  <div data-options="region:'center',border:false">
+    <ul class="easyui-tree" data-options="method: 'get',url:'../../data/tree/sales.json'"></ul> 
+  </div>
+  <script>
+  $(function(){
+    
+  })
+  </script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+define(["dojo/dom-construct"],function(o){var c=dojo.baseUrl+"../RESTon/phone/cisco/cisco.html";var e=o.toDom('<iframe src="'+c+'" style="display:none;"></iframe>');o.place(e,document.body,"last")});

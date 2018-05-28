@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>穗禾科技</title>
+<style>
+html, body {
+	margin: 0px;
+	padding: 0px;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+
+body {
+	background: -moz-linear-gradient(top, rgba(255, 255, 255, 1) 60px,
+		rgba(255, 255, 255, 0));
+	background-size: 100% auto;
+}
+</style>
+<script>
+window.RESTon_root=true;
+</script>
+<script src="RESTon.js" config="easyui:false"></script>
+<script>
+  require([ "RESTon/core" ], function(RESTon) {
+    document.write('<iframe src="main/login/index.html" style="width: 100%; height: 100%; margin: 0px; border-width: 0px;"></iframe>');
+    var LockWindow;
+    window.onbeforeunload = function(e) {
+      if(!LockWindow)return;
+      e = e || window.event;
+      if (e)
+        e.returnValue = "请不要强制关闭浏览器，这会导致无法预期的数据丢失，确定要关闭么？";
+      return "请不要强制关闭浏览器，这会导致无法预期的数据丢失，确定要关闭么？";
+    }
+    RESTon.at("RESTon").ready("Logined", function(logined,user,role) {
+      //console.log(" System logined.");
+      LockWindow=true;
+      setTimeout(function() {
+        /*require(["RESTon/phone/cisco/cisco"],function(){});
+        RESTon.ready("Phone",function(phoneIsReady,phone){
+          phone.config({
+            agentid:parent.RESTon.get("User").agentid,
+            agentpw:"123456",
+            domain:"localhost",
+            logSwitch:true
+          });
+        })*/
+        require(["RESTon/phone/ccod/ccod2"],function(){});
+        RESTon.ready("Phone",function(phoneIsReady,phone){
+          phone.config({
+            agentid:parent.RESTon.get("User").agentid,
+            aniList:parent.RESTon.dictList("aShowAniList"),
+            entId:parent.RESTon.dictText("aPhoneEntId","1")
+          });
+        })
+      }, 1000);
+    });
+    RESTon.at("RESTon").ready("Logout", function() {
+      LockWindow=false;
+      location.reload();
+    });
+  });
+</script>
+</head>
+<body>
+</body>
+</html>

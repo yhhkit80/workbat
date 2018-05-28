@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>角色定义</title>
+<script type="text/javascript" src="../../../RESTon.js"></script>
+<style>
+  .layout-panel-center .panel-title,.layout-panel-east .panel-title{border-left:1px solid #95b8e7;}
+  #role_list .tree-icon{background:url('../images/user.png') no-repeat center center}
+  #func_list .tree-icon{background:url('../images/single_people.gif') no-repeat center center}
+</style>
+<script>
+  var SelectRole;
+  $(function() {
+    
+    $('#role_list').tree({
+      url : '../../../reston/auth/role_list.jjs',
+      onSelect : function(node) {
+        SelectRole = node.id;
+        $.ajax({
+          type : "POST",
+          url : "../../../reston/auth/role_func.jjs",
+          data : {
+            role : node.id
+          },
+          success : function(data) {
+            $('#func_list').tree("loadData", data);
+            previewAuths();
+          }
+        });
+      },
+      onContextMenu : function(e, node) {
+        e.preventDefault();
+        // 查找节点
+        $('#role_list').tree('select', node.target);
+        // 显示快捷菜单
+        $('#list_contextmenu').menu('show', {
+          left : e.pageX,
+          top : e.pageY
+        });
+      },
+      onAfterEdit : function(node) {
+        $.ajax({
+          type : "POST",
+          url : "../../../reston/auth/role_update.jjs",
+          data : {
+            roleid : node.id,
+            rolename : node.text
+          }
+        });
+      }
+    });
+    $('#func_list').tree({
+      checkbox : true,
+      onCheck : previewAuths
+    });
+    $('#auth_tree').tree({
+      url : '../../../reston/auth/auth.jjs',
+      checkbox : true,
+      lines : true,
+      onBeforeSelect : function(node) {
+        return false;
+      },
+      onLoadSuccess:function(){
+        $('#auth_tree .tree-checkbox').click(function(){
+          return false
+        })
+      }
+    });
+  });
+  function previewAuths() {
+    var nodes = $('#func_list').tree("getChecked", "checked");
+    var auths = {};
+    for (var i = 0; i < nodes.length; i++) {
+      var node = nodes[i];
+      for ( var index in node.auths)
+        auths[node.auths[index]] = true;
+    }
+    var rescheck = $('#auth_tree').tree("getChecked", "checked");
+    for (var i = 0; i < rescheck.length; i++) {
+      var id = rescheck[i].id;
+      var node = $('#auth_tree').tree("find", id);
+      $('#auth_tree').tree("uncheck", node.target);
+    }
+    for ( var auth in auths) {
+      var node = $('#auth_tree').tree("find", auth);
+      var isLeaf = $('#auth_tree').tree("isLeaf", node.target);
+      if (isLeaf)
+        $('#auth_tree').tree("check", node.target);
+    }
+  }
+  function role_add() {
+    $.ajax({
+      type : "POST",
+      url : "../../../reston/auth/role_add.jjs",
+      complete : function(data) {
+        $.ajax({
+          type : "POST",
+          url : "../../../reston/auth/role_list.jjs",
+          success : function(data) {
+            $('#role_list').tree("loadData", data);
+          }
+        });
+      }
+    });
+  }
+  function role_update() {
+    var node = $('#role_list').tree('getSelected');
+    $('#role_list').tree('beginEdit', node.target);
+  }
+  function role_remove() {
+    var node = $('#role_list').tree('getSelected');
+    if (!confirm("确认删除 " + node.text + " 么？"))
+      return;
+    $.ajax({
+      type : "POST",
+      url : "../../../reston/auth/role_delete.jjs",
+      data : {
+        role : node.id
+      },
+      complete : function(data) {
+        $.ajax({
+          type : "POST",
+          url : "../../../reston/auth/role_list.jjs",
+          success : function(data) {
+            $('#role_list').tree("loadData", data);
+          }
+        });
+      }
+    });
+  }
+  function role_func_update() {
+    if(!$('#func_list').tree("getChecked", "checked")) return;
+    var nodes = $('#func_list').tree("getChecked", "checked");
+    var nodeids = [];
+    for (var index = 0; index < nodes.length; index++)
+      nodeids.push(nodes[index].id);
+    $.ajax({
+      type : "POST",
+      url : "../../../reston/auth/role_func_update.jjs",
+      data : {
+        role : SelectRole,
+        funcs : nodeids
+      },
+      complete : function(data) {
+        $.ajax({
+          type : "POST",
+          url : "../../../reston/auth/role_list.jjs",
+          success : function(data) {
+            $('#role_list').tree("loadData", data);
+          }
+        });
+      }
+    });
+  }
+</script>
+</head>
+<body class="easyui-layout" data-options="fit:true">
+  <div data-options="region:'west','title':'角色定义',border:false" style="width: 33%;">
+    <div class="easyui-layout" data-options="fit:true,border:false">
+      <div data-options="region:'north',border:false" style="height:35px;">
+        <a id="add_button" onClick="role_add()" class="easyui-linkbutton" data-options="iconCls:'icon-add',auth:{authid:'o_r_addrole',type:'disable'}" style="margin-left:30px;margin-top:5px;">增加角色</a>
+      </div>
+      <div data-options="region:'center',border:false">
+        <ul id="role_list" style="margin:10px;"></ul>
+      </div>
+    </div>
+  </div>
+  <div data-options="region:'center','title':'职能配置',border:false" style="border-left:1px solid #95b8e7;">
+    <div class="easyui-layout" data-options="fit:true,border:false">
+      <div data-options="region:'north',border:false" style="height:35px;">
+        <a id="save_button" onClick="role_func_update()" class="easyui-linkbutton" data-options="iconCls:'icon-save',auth:{authid:'o_r_updfunc',type:'disable'}" style="margin-left:30px;margin-top:5px;">保存职能</a>
+      </div>
+      <div data-options="region:'center',border:false">
+        <ul id="func_list" style="margin:10px;"></ul>
+      </div>
+    </div>
+  </div>
+  <div data-options="region:'east',title:'权限列表',border:false" style="width: 33%;border-left:1px solid #95b8e7;">
+    <ul id="auth_tree" style="margin:10px;"></ul>
+  </div>
+  <div id="list_contextmenu" class="easyui-menu" style="width: 120px;">
+    <div onclick="role_update()" data-options="iconCls:'icon-edit',auth:{authid:'o_r_updrole',type:'disable'}">编辑</div>
+    <div onclick="role_remove()" data-options="iconCls:'icon-remove',auth:{authid:'o_r_updrole',type:'hide'}">移除</div>
+  </div>
+</body>
+</html>

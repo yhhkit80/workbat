@@ -1,0 +1,1165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>风险详情</title>
+<link rel="shortcut icon" href="image/favicon.png" type="image/x-icon" />
+<link rel="stylesheet" href="css/risk.css">
+<style type="text/css">
+@import "dojotoolkit/dojo/resources/dojo.css";
+@import "dojotoolkit/dijit/themes/tundra/tundra.css";
+</style>
+<script src="js/jquery-2.2.1.min.js"></script>
+
+<script src="//cdn.bootcss.com/bootstrap/3.3.6/js/bootstrap.js"></script>
+<script src="dojotoolkit/dojo/dojo.js" djConfig="parseOnLoad: true"></script>
+<script src="js/angular.js"></script>
+<script>
+	//将url中的参数转化为对象格式
+  function parseRequstString(url) {
+		var obj = {};
+		var keyvalue = [];
+		var key = "", value = "";
+		var paraString = url.substring(url.indexOf("?") + 1, url.length).split("&");
+		for (var i in paraString) {
+			keyvalue = paraString[i].split("=");
+			key = keyvalue[0];
+			value = keyvalue[1];
+			obj[key] = value;
+		}
+		return obj;
+  }
+	//格式化当前日期时间
+  function getNowFormatDate() {
+    var date = new Date();
+    var seperator1 = "-";
+    var seperator2 = ":";
+    var month = date.getMonth() + 1;
+    var strDate = date.getDate();
+    var hour = date.getHours();
+    var minute = date.getMinutes();
+    var second = date.getSeconds();
+    function numFormat(num){
+      return num = num<10 ? ("0" + num) : num;
+    }
+    var currentdate = date.getFullYear() + seperator1 + numFormat(month) + seperator1 + numFormat(strDate)
+            + " " + numFormat(hour) + seperator2 + numFormat(minute)
+            + seperator2 + numFormat(second);
+    return currentdate;
+	}
+	// 图表左侧罗盘参数定义
+  var dimensions;
+  function axis() {
+    return [ 350, "较差", 450, "一般", 550, "良好", 700, "优秀", 900, "极好", 1000 ];
+  }
+  // 右侧转盘初始化数据
+  function setRatingInfo(data){
+    if(!data.rating){
+      var tbodyContent = '<tr><td class="emptytd-mark" colspan="2">无数据</td></tr>';
+    	$('.list-score tbody').html(tbodyContent);
+      data.rating={
+        score:350
+    	}
+    };
+    dojo.ready(function() {
+          dashboard.setScore({
+                score : data.rating.score,
+                level : data.rating.level,
+                time : data.rating.time
+              });
+          if(data.rating.dimensions)
+            diamond.load(data.rating.dimensions);
+        });
+  }
+  // 图表右侧转动事件
+  function selectDimesion(index) {
+    scoreTableFill(dimensions[index]);
+    return;
+  }
+  //两个图表下右侧的表格填充，因为转动事件用的dojo，方法写在标签中，无法用angular
+  function scoreTableFill(listData) {
+    var tbodyContent = '';
+    if(listData){
+      tbodyContent =  '<tr><td>最大分值</td><td>' + (listData.max||'') + '</td></tr>' +
+								      '<tr><td>平均分值</td><td>' + (listData.value||'') + '</td></tr>' +
+								      '<tr><td>实际分值</td><td>' + (listData.avescore||'') + '</td></tr>' +
+								      '<tr><td>建议</td><td>' + (listData.advice||'') + '</td></tr>';
+    }else {
+      tbodyContent = '<tr><td class="emptytd-mark" colspan="2">无数据</td></tr>';
+    }
+    $('.list-score tbody').html(tbodyContent);
+  }
+</script>
+<script>
+  var app = angular.module('riskApp', []);
+  app.controller('riskCtrl',["$scope","$http","$q", function($scope,$http,$q) {
+    $scope.loading = true;//加载时显示遮罩层
+    //angular的post请求方法
+    $scope.sendRequest = function(url,params){
+      var deferred = $q.defer();  
+      var obj = {
+           method: 'POST',
+           url: url,
+           data: params 
+       };
+       $http(obj).success(function(data){
+           deferred.resolve(data);
+       }).error(function(data){
+           deferred.reject('There was an error')
+       });
+       return deferred.promise;  
+    };
+    //angular的get请求方法
+    $scope.sendGetRequest = function(url,params){
+      var deferred = $q.defer();  
+      var obj = {
+           method: 'GET',
+           url: url,
+           data: params 
+       };
+       $http(obj).success(function(data){
+           deferred.resolve(data);
+       }).error(function(data){
+           deferred.reject('There was an error')
+       });
+       return deferred.promise;  
+    };
+    //数据中有collectsituation:"1001 1002"等code时，获取code对应的中文
+    $scope.getCodeText = function(code){
+      var allCodes = {
+          "1001" : "客户未验证手机",
+          "1002" : "无风险预警"
+      };
+      return allCodes[code];
+    }
+    // 获取url中的参数并转化成JSON字符串
+    var json = parseRequstString(location.search);
+    var jsonStr = JSON.stringify(json);
+    // 设置请求的url，初始化发送请求获取json数据
+    var url = "testdata/mogo.json";
+    //var url = "http://mogox.godsuy.com/front/Order001/query.jjs"+location.search;
+    $scope.sendGetRequest(url,jsonStr).then(function(data){
+      $scope.setDataScope(data);  //调用$scope赋值方法
+      setRatingInfo(data);        //调用rating中的方法，信用评分右侧转盘配置
+      $scope.loading = false;     //请求成功后隐藏遮罩层
+    });
+    //$scope赋值方法
+    $scope.setDataScope = function(data){
+      // 获取的征信报告是简版还是详版,true为详版，false为简版
+      $scope.multiple = data.multiple;
+      
+      // 数据中有collectsituation:"1001 1002"时，表示code码对应收集状态描述 ，如1001固定为:客户未验证手机
+      if(data.collectsituation){
+        $scope.collectsituation = data.collectsituation.split(' ');
+        $scope.codes = {};
+        angular.forEach($scope.collectsituation,function(item){
+          $scope.codes[item] = $scope.getCodeText(item)
+        });
+      }
+      // 报告时间为当前时间
+      $scope.reportTime = getNowFormatDate();
+      
+      // 用户基础信息检测  模块
+      $scope.customer = data.customer || {};
+      
+      // 公安征信 模块 ，获取图片、实名认证及身份证姓名是否一致
+      $scope.publicsecurity = data.publicsecurity || {};
+      //match为'1'是与身份证姓名一致，match为'0'是与身份证姓名不一致，没有图片时显示默认的图片
+      $scope.name_auth = $scope.publicsecurity.match ? true : false;
+      var img_url = $scope.publicsecurity.img || '';
+      $scope.image_url = img_url ? ('data:image/png;base64,' + img_url) : './image/head.png';
+      
+      /*
+      //互联网负面信息接口，显示是可疑用户还是正常用户，点击可疑用户后显示负面信息列表;
+      //res = {data:{items:[{content:'xxx',keywords:'二手车',seacher:'百度'}],result:'1',resultMsg:'查询成功！',status:'可疑用户'},header:{code:'0',msg:'接口请求成功'}}
+      var add_url = 'http://car.seehoo.cn/datacenter/api/tasks';
+      $scope.sendRequest(add_url,{keyword:$scope.customer.phone}).then(function(res){
+        $scope.taskinfo = res.data;
+      });
+      */
+      
+      // 运营商基础数据 模块
+      $scope.mobilebill = data.mobilebill || {}; //运营商基础数据  所有数据
+      $scope.mobileinfo = $scope.mobilebill.mobileinfo || {}; //运营商基础数据 - 手机基础信息
+      $scope.payments_init = $scope.mobilebill.payments || []; //运营商基础数据 - 手机充值记录, 要分页,防止分页初始空值
+      $scope.bills_basic_init = $scope.mobilebill.bills_basic || []; //运营商基础数据 - 手机消费数据(简版), 要分页,防止分页初始空值
+      $scope.bills_detail_init = $scope.mobilebill.bills_detail || []; //运营商基础数据 - 手机消费数据(详版), 要分页,防止分页初始空值
+
+      // 信用评分 模块 
+      if(data.rating) {
+        $scope.rating = data.rating;
+        dimensions = data.rating.dimensions;  // 信用评分右侧转盘信息
+      }
+      $scope.credit_history = $scope.customer.credit_history; // 信用评分中左侧信用历史信息
+      
+      // 用户行为检测 模块
+      $scope.user_behavior = data.user_behavior || {}; // 用户行为检测 所有数据
+      $scope.application_check = $scope.user_behavior.application_check; // 用户行为检测 - 用户行为检测(详版才有)
+      $scope.riskwarn= $scope.user_behavior.riskwarn; // 用户行为检测 - 风险预警
+      $scope.court_execution = $scope.user_behavior.court_execution; // 用户行为检测 - 法院执行详单
+      $scope.court_dishonesty_init = $scope.user_behavior.court_dishonesty || []; // 用户行为检测 - 法院失信详单, 要分页,防止分页初始空值
+      $scope.social_bilk_init = $scope.user_behavior.social_bilk || []; // 用户行为检测 - 社会赖帐, 要分页,防止分页初始空值
+      $scope.carloan_blacklist_init = $scope.user_behavior.carloan_blacklist || []; // 用户行为检测 - 黑名单详情-车贷黑名单, 要分页,防止分页初始空值
+      $scope.social_misconduct = $scope.user_behavior.social_misconduct; // 用户行为检测 - 社会不良行为
+      $scope.net_negative_info = $scope.user_behavior.net_negative_info; // 用户行为检测 - 互联网负面信息 
+      
+      // 黑中介 模块 (暂时不做)
+      $scope.black_agency = data.black_agency; // 黑中介 - 黑中介
+      
+      // 出行分析 模块 (详版)
+      $scope.trip_info = data.trip_info; // 出行分析 - 出行分析
+      
+      // 运营商数据分析 模块 (详版)
+      $scope.mobile_detail = data.mobile_detail || {}; // 运营商数据分析 所有数据
+      $scope.collection_contact = $scope.mobile_detail.collection_contact; // 运营商数据分析 - 联系人信息验真
+      $scope.contact_list_init = $scope.mobile_detail.contact_list || []; // 运营商数据分析 - 通话数据分析 , 要分页,防止分页初始空值
+      $scope.sms_list_init = $scope.mobile_detail.sms_list || []; // 运营商数据分析 - 短信数据分析, 要分页,防止分页初始空值
+      $scope.contact_region = $scope.mobile_detail.contact_region || []; // 运营商数据分析 - 通话人所在地区分析
+      
+      // 银联消费行为分析 模块 (详版)
+      $scope.customer_behavior = data.customer_behavior || {}; // 银联消费行为分析 所有数据
+      $scope.consumption = $scope.customer_behavior.consumption; // 银联消费行为分析 - 消费数据分析
+      $scope.transaction = $scope.customer_behavior.transaction; // 银联消费行为分析 - 交易情况分析
+      
+      // 数据来源 模块
+      $scope.datasource = data.datasource; // 数据来源 - 绑定数据源信息
+      
+      // 用户基础信息检测中 常驻地址 字段 (详版)
+      $scope.residentAddress = $scope.contact_region.length ? $scope.contact_region[0].region_loc : '';
+      
+      // 需要分页的数据获取初始配置值,第一个为原始值,第二个为每页条数
+      $scope.getPageCofigData = function(initData,pageSize){
+        return {
+          totalData : initData,
+        	Data : initData.slice(0,pageSize),
+        	Total : initData.length,
+        	CurrentPage : 1,
+       	  PageSize : pageSize,
+        	Pages : Math.ceil(initData.length / pageSize),
+				}
+      }
+      // 运营商基础数据 - 手机充值记录   : 初始化配置分页信息，Data为分页时页面渲染的数据
+      $scope.payments = $scope.getPageCofigData ($scope.payments_init, 10);
+      // 运营商基础数据 - 手机消费数据(简版)   : 初始化配置分页信息，Data为分页时页面渲染的数据
+      $scope.bills_basic = $scope.getPageCofigData ($scope.bills_basic_init, 10);
+      // 运营商基础数据 - 手机消费数据(详版)   : 初始化配置分页信息，Data为分页时页面渲染的数据
+      $scope.bills_detail = $scope.getPageCofigData ($scope.bills_detail_init, 10);
+      
+      // 用户行为检测 - 法院失信详单   : 初始化配置分页信息，Data为分页时页面渲染的数据
+      $scope.court_dishonesty = $scope.getPageCofigData ($scope.court_dishonesty_init, 1);
+      // 用户行为检测 - 社会赖帐   : 初始化配置分页信息，Data为分页时页面渲染的数据
+      $scope.social_bilk = $scope.getPageCofigData ($scope.social_bilk_init, 1);
+      // 用户行为检测 - 黑名单详情-车贷黑名单   : 初始化配置分页信息，Data为分页时页面渲染的数据
+      $scope.carloan_blacklist = $scope.getPageCofigData ($scope.carloan_blacklist_init, 1);
+      
+   		// 运营商数据分析 - 通话数据分析  : 初始化配置分页信息，Data为分页时页面渲染的数据
+      $scope.contact_list = $scope.getPageCofigData ($scope.contact_list_init, 20);
+      // 运营商数据分析 - 短信数据分析  : 初始化配置分页信息，Data为分页时页面渲染的数据
+      $scope.sms_list = $scope.getPageCofigData ($scope.sms_list_init, 10);
+    }
+    // 分页的具体方法,第一页,上一页,下一页,最后一页
+    $scope.firstPage = function(name){
+      if($scope[name].CurrentPage == 1) return;
+      $scope[name].CurrentPage = 1;
+      $scope[name].Data = $scope[name].totalData.slice(0,$scope[name].PageSize);
+    }
+    $scope.prevPage = function(name){
+      if($scope[name].CurrentPage == 1) return;
+      $scope[name].CurrentPage -= 1;
+      var start = $scope[name].PageSize * ($scope[name].CurrentPage-1);
+      var end = start + $scope[name].PageSize;
+      $scope[name].Data = $scope[name].totalData.slice(start,end);
+    };
+    $scope.nextPage = function(name){
+      if($scope[name].CurrentPage == $scope[name].Pages) return;
+      $scope[name].CurrentPage += 1;
+      var start = $scope[name].PageSize * ($scope[name].CurrentPage-1);
+      var end = start + $scope[name].PageSize;
+      $scope[name].Data = $scope[name].totalData.slice(start,end);
+    }
+    $scope.lastPage = function(name){
+      if($scope[name].CurrentPage == $scope[name].Pages) return;
+      $scope[name].CurrentPage = $scope[name].Pages;
+      var start = $scope[name].PageSize * ($scope[name].CurrentPage-1);
+      var end = start + $scope[name].PageSize;
+      $scope[name].Data = $scope[name].totalData.slice(start,end);
+    }
+    //发送请求的参数,即url中的参数,仅作展示备注
+    var params = {
+        bankcatd_no: 1,
+        cust_idno: 1,
+        cust_phone: 1,
+        order_id: 1,
+        req_meid: 1,
+        req_type: 1
+    };
+  }]);
+</script>
+</head>
+<body ng-app="riskApp" ng-controller="riskCtrl">
+<div class="rd-body">
+  <div class="model" ng-show="loading">
+    <span class="loading-text">加载中，请稍候...</span>
+  </div>
+   <!-- 页头和用户基础信息检测  end -->
+  <div class="rd-container">
+    <div class="rotatelogo">谷穗数据</div>
+    <div class="info-header-title">Mogo云征信</div>
+    
+    <div class="rd-container baseinfo-box">
+    	<div class="rd-baseinfo-title">用户基础信息检测<span class="report-time" ng-cloak>报告时间：{{reportTime}}</span></div>
+      <table class="rd-risksection">
+        <tr>
+          <td><span class="field-label">真实姓名：</span>{{customer.custname}} 
+          <span ng-class="{true:'icon-cert-ok',false:'icon-cert-no'}[name_auth]"></span>
+          </td>
+          <td><span class="field-label">性别：</span>{{customer.sex}}</td>
+          <td rowspan="5">
+            <div class="customer-head" ng-class="{'stamp':name_auth}">
+              <img ng-src="{{image_url}}" />
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><span class="field-label">手机号：</span>{{customer.phone}}  <span ng-class="{true:'icon-cert-ok',false:'icon-cert-no'}[mobileinfo.match]"></span>
+          </td>
+          <td><span class="field-label">年龄：</span>{{customer.age}}</td>
+        </tr>
+        <tr>
+          <td>
+          	<span class="field-label">身份证与手机认证匹配：</span>
+          	<span ng-class="{true:'bg-green',false:'bg-red'}[name_auth && mobileinfo.match]" ng-cloak>{{name_auth && mobileinfo.match ? '一致' : '不一致'}}</span>
+          	<span ng-class="{true:'icon-verify-ok',false:'icon-verify-no'}[name_auth && mobileinfo.match]"></span>
+          </td>
+          <td><span class="field-label">出生年月：</span>{{customer.birth}}</td>
+        </tr>
+        <tr>
+          <td>
+          	<span class="field-label bold-font">风险等级：</span>
+          	<span class="bold-font" ng-class="{'font-green':customer.risklevel=='低风险','font-orange':customer.risklevel=='中风险','font-red':customer.risklevel=='高风险'}">{{customer.risklevel}}</span>
+          </td>
+          <td><span class="field-label">身份证号码：</span>{{customer.certno}}</td>
+        </tr>
+        <tr>
+        	<td><span class="field-label">户籍地：</span>{{customer.censusaddr}}</td>
+          <td><span class="field-label">银行卡号：</span>{{customer.bankcard}}</td>
+        </tr>
+        <tr>
+        	<td colspan="2"><span class="field-label">单位地址：</span>{{customer.unitaddr}}</td>
+        </tr>
+        <tr>
+        	<td colspan="2"><span class="field-label">家庭地址：</span>{{customer.houseaddr}}</td>
+        </tr>
+        <tr ng-if="multiple">
+          <td colspan="2">
+          	<span class="field-label">常驻地址分析：</span>
+            <span class="bold-font" ng-cloak>{{residentAddress}}</span>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <!-- 页头和用户基础信息检测  end -->
+  
+  <!-- 前一个 运营商基础数据   start --> 
+  <div class="rd-container">
+    <div class="info-title">
+      <span ng-class="{'nullTip':codes['1001']!=undefined}">运营商基础数据</span>
+      <span class="codeTip" ng-if="codes['1001']">({{codes['1001']}})</span>
+    </div>
+    <div class="rd-container">
+			<table class="rd-risksection">
+				<caption>手机基础信息</caption>
+				<thead>
+				  <tr>
+				    <th>手机号码</th>
+				    <th>运营商登记名</th>
+				    <th>运营商</th>
+				    <th>实名认证</th>
+				    <th>手机号互联网标记</th>
+				    <th>在网时长(月)</th>
+				    <th ng-if="multiple">在网日期区间</th>
+				    <th>积分</th>
+				    <th ng-if="multiple">套餐</th>
+				  </tr>
+				</thead>
+				<tbody>
+				   <tr>
+				     <td>{{customer.phone}}</td>
+				     <td>{{mobileinfo.custname}}</td>
+				     <td>{{mobileinfo.opername}} {{mobileinfo.provname}}</td>
+				     <td>{{mobileinfo.match ? '是' : '否'}}</td>
+				     <td>{{mobileinfo.mark}}</td>
+				     <td>{{mobileinfo.mobileage}}</td>
+				     <td ng-if="multiple">{{mobileinfo.mobileinterval}}</td>
+				     <td>{{mobileinfo.point}}</td>
+				     <td ng-if="multiple">{{mobileinfo.phoneplan}}</td>
+				   </tr>
+				</tbody>
+      </table>
+    </div>
+	</div>
+	<!-- 前一个 运营商基础数据   end -->
+	
+	<!-- 信用评分 start --> 
+  <div class="rd-container">
+    <div class="info-title">信用评分</div>
+    <div class="clearfix">
+    	<!-- 图表 左图  -->
+      <div class="top1" ng-class="{'rd-half':rating}">
+        <div data-dojo-id="dashboard" data-dojo-type="wiki/chart/Dashboard"
+          data-dojo-props="width:280,height:310,axis:axis"
+          style="margin: 0 auto; width: 280px; height: 310px;"></div>
+      </div>
+      <!-- 图表 右图  -->
+      <div class="top3" ng-class="{'rd-half':rating}" ng-hide="!rating">
+        <div data-dojo-id="diamond" data-dojo-type="wiki/chart/DiamondParts"
+          data-dojo-props="width:280,height:310,bottomPointer:selectDimesion"
+          style="margin: 0 auto; width: 280px; height: 310px;"></div>
+      </div>
+    </div>
+    <div class="rd-chart-tbbox clearfix">
+    	<!-- 图表左侧 下方列表credit_history  start -->
+      <div ng-class="{'rd-half':rating}">
+        <div class="chart-tbbox">
+          <table class="rd-risksection">
+            <thead>
+              <tr>
+                <th>类别</th>
+                <th>属性</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="item in credit_history">
+                <td>{{item.name}}</td>
+                <td>{{item.value}}</td>
+              </tr>
+             <tr ng-if="!credit_history || credit_history.length==0"><td class="emptytd-mark" colspan="2">无数据</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <!-- 图表左侧 下方列表credit_history end -->
+      <!-- 图表右侧 下方列表list-score start -->
+      <div class="rd-half" ng-if="rating">
+        <div class="chart-tbbox">
+          <table class="rd-risksection charttable list-score">
+            <thead>
+              <tr>
+                <th>类别</th>
+                <th>属性</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <!-- 图表右侧 下方列表list-score  end -->
+    </div>
+  </div>
+  <!-- 信用评分 end --> 
+  
+  <!-- 用户行为检测  start  -->
+  <div class="rd-container">
+    <div class="rd-container">
+      <div class="info-title">用户行为检测</div>
+      <!-- 详版中的用户行为检测  start  -->
+      <table class="rd-risksection" ng-if="multiple">
+        <caption>用户行为检测</caption>
+        <thead>
+          <tr>
+            <th>检查项</th>
+            <th>结果</th>
+            <th>依据</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="item in application_check">
+            <td>{{item.check_point}}</td>
+            <td>{{item.result}}</td>
+            <td>{{item.evidence}}</td>
+          </tr>
+          <tr ng-if="!application_check || application_check.length==0"><td class="emptytd-mark" colspan="3">无数据</td></tr>
+        </tbody>
+      </table>
+      <!-- 详版中的用户行为检测  end  -->
+      
+      <!-- 风险预警  start -->
+      <table class="rd-risksection m-t-50">
+        <caption>风险预警</caption>
+        <thead>
+          <tr>
+            <th>核对结果</th>
+            <th>风险项</th>
+            <th>风险来源</th>
+          </tr>
+        </thead>
+        <tbody>
+           <tr ng-repeat="item in riskwarn">
+             <td ng-class="{'sign-red':item.state=='高危','sign-yellow':item.state=='关注','sign-green':item.state=='未出现'}">{{item.state}}</td>
+             <td>{{item.name}}</td>
+             <td>{{item.riskrule}}</td>
+           </tr>
+           <tr ng-if="!riskwarn || riskwarn.length==0"><td class="emptytd-mark" colspan="3">无数据</td></tr>
+        </tbody>
+      </table>
+      <!-- 风险预警 end -->
+
+      <!-- 法院执行详单  start -->
+      <table class="rd-risksection m-t-50">
+        <caption>法院执行详单</caption>
+        <thead>
+          <tr>
+            <th>案件编号</th>
+            <th>立案时间</th>
+            <th>案件状态</th>
+            <th>执行法院</th>
+            <th>执行标的</th>
+            <th>身份证号码/组织机构代码</th>
+            <th>被执行人姓名/名称</th>
+          </tr>
+        </thead>
+        <tbody>
+           <tr ng-repeat="item in court_execution">
+             <td>{{item.caseCode}}</td>
+             <td>{{item.caseCreateTime}}</td>
+             <td>{{item.caseState}}</td>
+             <td>{{item.execCourtName}}</td>
+             <td>{{item.execMoney}}</td>
+             <td>{{item.partyCardNum}}</td>
+             <td>{{item.pname}}</td>
+           </tr>
+           <tr ng-if="!court_execution || court_execution.length==0"><td class="emptytd-mark" colspan="7">无数据</td></tr>
+        </tbody>
+      </table>
+      <!-- 法院执行详单 end -->
+
+      <!-- 法院失信详单  start -->
+      <table class="rd-risksection m-t-50">
+        <caption>法院失信详单</caption>
+        <thead style="display:none;">
+          <tr>
+            <th>被执行人</th>
+            <th>详细信息</th>
+          </tr>
+        </thead>
+        <tbody>
+           <tr ng-repeat="item in court_dishonesty.Data">
+             <td valign="top">
+	             <p><span class="field-label">被执行人：</span>{{item.INAME}}</p>
+	             <p><span class="field-label">性别：</span>{{item.SEXY}}</p>
+	             <p><span class="field-label">身份证号：</span>{{item.CARDNUM}}</p>
+	             <p><span class="field-label">省份：</span>{{item.AREANAME}}</p>
+	             <p><span class="field-label">执行法院：</span>{{item.COURTNAME}}</p>
+	             <p><span class="field-label">执行单位：</span>{{item.GISTUNIT}}</p>
+             </td>
+             <td valign="top">
+	             <p><span class="field-label">立案时间：</span>{{item.REGDATE}}</p>
+	             <p><span class="field-label">公示时间：</span>{{item.PUBLISHDATE}}</p>
+	             <p><span class="field-label">案件编号：</span>{{item.CASECODE}}</p>
+	             <p><span class="field-label">法律义务：</span>{{item.DUTY}}</p>
+	             <p><span class="field-label">履行情况：</span>{{item.PERFORMANCE}}</p>
+	             <p><span class="field-label">描述：</span>{{item.DISRUPTTYPENAME}}</p>
+             </td>
+           </tr>
+           <tr ng-if="!court_dishonesty.Data || court_dishonesty.Total==0"><td class="emptytd-mark" colspan="2">无数据</td></tr>
+        </tbody>
+        <tfoot ng-if="court_dishonesty.Total > 0">
+          <tr>
+            <td colspan="2">
+              <div class="page-list">
+                <div class="total ng-binding"> 共有{{court_dishonesty.Total}}条, 共{{court_dishonesty.Pages}}页, 每页显示：{{ court_dishonesty.PageSize }}条 </div>
+                <div class="pagination123" ng-show="court_dishonesty.Total > 0">
+                  <a ng-class="{disabled: court_dishonesty.CurrentPage == 1}" ng-click="firstPage('court_dishonesty')">«</a>
+                  <a ng-class="{disabled: court_dishonesty.CurrentPage == 1}" ng-click="prevPage('court_dishonesty')">‹</a>
+                  <a class="active ng-binding">{{court_dishonesty.CurrentPage}}</a>
+                  <a ng-class="{disabled: court_dishonesty.CurrentPage == court_dishonesty.Pages}" ng-click="nextPage('court_dishonesty')"><span>›</span></a>
+                  <a ng-class="{disabled: court_dishonesty.CurrentPage == court_dishonesty.Pages}" ng-click="lastPage('court_dishonesty')"><span>»</span></a>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+      <!-- 法院失信详单 end -->
+      
+      <!-- 社会赖帐  start -->
+      <table class="rd-risksection m-t-50">
+        <caption>社会赖帐</caption>
+        <thead style="display:none;">
+          <tr>
+            <th>被执行人</th>
+            <th>详细信息</th>
+          </tr>
+        </thead>
+        <tbody>
+           <tr ng-repeat="item in social_bilk.Data">
+             <td valign="top">
+	             <p><span class="field-label">被执行人：</span>{{item.name}}</p>
+	             <p><span class="field-label">性别：</span>{{item.sex}}</p>
+	             <p><span class="field-label">年龄：</span>{{item.age}}</p>
+	             <p><span class="field-label">身份证号：</span>{{item.cardNum}}</p>
+	             <p><span class="field-label">省份：</span>{{item.areaName}}</p>
+	             <p><span class="field-label">执行法院：</span>{{item.courtName}}</p>
+	             <p><span class="field-label">执行单位：</span>{{item.gistUnit}}</p>
+	             <p><span class="field-label">执行文号：</span>{{item.gistId}}</p>
+             </td>
+             <td valign="top">
+	             <p><span class="field-label">立案时间：</span>{{item.caseCreateTime}}</p>
+	             <p><span class="field-label">公示时间：</span>{{item.publishDate}}</p>
+	             <p><span class="field-label">案件编号：</span>{{item.caseCode}}</p>
+	             <p><span class="field-label">法律义务：</span>{{item.duty}}</p>
+	             <p><span class="field-label">履行情况：</span>{{item.performance}}</p>
+	             <p><span class="field-label">执行情况：</span>{{item.disruptTypeName}}</p>
+             </td>
+           </tr>
+           <tr ng-if="!social_bilk.Data || social_bilk.Total==0"><td class="emptytd-mark" colspan="2">无数据</td></tr>
+        </tbody>
+        <tfoot ng-if="social_bilk.Total > 0">
+          <tr>
+            <td colspan="2">
+              <div class="page-list">
+                <div class="total ng-binding"> 共有{{social_bilk.Total}}条, 共{{social_bilk.Pages}}页, 每页显示：{{social_bilk.PageSize }}条 </div>
+                <div class="pagination123" ng-show="social_bilk.Total > 0">
+                  <a ng-class="{disabled: social_bilk.CurrentPage == 1}" ng-click="firstPage('social_bilk')">«</a>
+                  <a ng-class="{disabled: social_bilk.CurrentPage == 1}" ng-click="prevPage('social_bilk')">‹</a>
+                  <a class="active ng-binding">{{social_bilk.CurrentPage}}</a>
+                  <a ng-class="{disabled: social_bilk.CurrentPage == social_bilk.Pages}" ng-click="nextPage('social_bilk')"><span>›</span></a>
+                  <a ng-class="{disabled: social_bilk.CurrentPage == social_bilk.Pages}" ng-click="lastPage('social_bilk')"><span>»</span></a>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+      <!-- 社会赖帐 end -->
+      
+      <!-- 黑名单详情-车贷黑名单   start -->
+      <table class="rd-risksection m-t-50">
+        <caption>黑名单详情-车贷黑名单 </caption>
+        <thead style="display:none;">
+          <tr>
+            <th>黑名单人</th>
+            <th>详细信息</th>
+          </tr>
+        </thead>
+        <tbody>
+           <tr ng-repeat="item in carloan_blacklist.Data">
+             <td valign="top" width="50%">
+	             <p><span class="field-label">姓名：</span>{{item.ACUSTOMERNAME}}</p>
+	             <p><span class="field-label">证件号码：</span>{{item.ACERTNO}}</p>
+	             <p><span class="field-label">手机号码：</span>{{item.AMOBILENO}}</p>
+	             <p><span class="field-label">家庭地址：</span>{{item.AFIMALLYADDR}}</p>
+	             <p><span class="field-label">户籍地址：</span>{{item.AREGISTERADDR}}</p>
+             </td>
+             <td valign="top" width="50%">
+	             <p><span class="field-label">坏账原因：</span>{{item.ABLACKREASON}}</p>
+	             <p><span class="field-label">贷款时间：</span>{{item.ALOADDATE}}</p>
+	             <p><span class="field-label">贷款机构：</span>{{item.ADATASOURCE}}</p>
+	             <p><span class="field-label">逾期时长：</span>{{item.AOVERDUEDURATION}}</p>
+	             <p><span class="field-label">逾期本金：</span>{{item.AOVERDUEAMOUNT}}</p>
+	             <p><span class="field-label">贷款本金：</span>{{item.AAMOUNT}}</p>
+             </td>
+             <td>
+           </tr>
+           <tr ng-if="!carloan_blacklist.Data || carloan_blacklist.Total==0"><td class="emptytd-mark" colspan="2">无数据</td></tr>
+        </tbody>
+        <tfoot ng-if="carloan_blacklist.Total > 0">
+          <tr>
+            <td colspan="2">
+              <div class="page-list">
+                <div class="total ng-binding"> 共有{{carloan_blacklist.Total}}条, 共{{carloan_blacklist.Pages}}页, 每页显示：{{carloan_blacklist.PageSize }}条 </div>
+                <div class="pagination123" ng-show="carloan_blacklist.Total > 0">
+                  <a ng-class="{disabled: carloan_blacklist.CurrentPage == 1}" ng-click="firstPage('carloan_blacklist')">«</a>
+                  <a ng-class="{disabled: carloan_blacklist.CurrentPage == 1}" ng-click="prevPage('carloan_blacklist')">‹</a>
+                  <a class="active ng-binding">{{carloan_blacklist.CurrentPage}}</a>
+                  <a ng-class="{disabled: carloan_blacklist.CurrentPage == carloan_blacklist.Pages}" ng-click="nextPage('carloan_blacklist')"><span>›</span></a>
+                  <a ng-class="{disabled: carloan_blacklist.CurrentPage == carloan_blacklist.Pages}" ng-click="lastPage('carloan_blacklist')"><span>»</span></a>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+      <!-- 黑名单详情-车贷黑名单 end -->
+      
+      <!-- 社会不良行为  start -->
+      <table class="rd-risksection m-t-50">
+        <caption>社会不良行为</caption>
+        <thead>
+          <tr>
+            <th>姓名</th>
+            <th>身份证号</th>
+            <th>犯案时间</th>
+            <th>犯案记录</th>
+          </tr>
+        </thead>
+        <tbody>
+           <tr ng-if="social_misconduct.crimetime && social_misconduct.hethercrime">
+             <td>{{social_misconduct.certName}}</td>
+             <td>{{social_misconduct.certNo}}</td>
+             <td>{{social_misconduct.crimetime}}</td>
+             <td>{{social_misconduct.hethercrime}}</td>
+           </tr>
+           <tr ng-if="!(social_misconduct.certName && social_misconduct.certNo)"><td class="emptytd-mark" colspan="4">无数据</td></tr>
+        </tbody>
+      </table>
+      <!-- 社会不良行为 end -->
+      
+      <!-- 互联网负面信息  start -->
+      <table class="rd-risksection m-t-50">
+        <caption>互联网负面信息</caption>
+        <thead>
+          <tr>
+            <th>关键字</th>
+            <th>敏感字</th>
+            <th>详细内容</th>
+            <th>数据源</th>
+          </tr>
+        </thead>
+        <tbody>
+           <tr ng-repeat="item in net_negative_info">
+             <td>{{item.search_words}}</td>
+             <td>{{item.keywords}}</td>
+             <td>{{item.content}}</td>
+             <td>{{item.searcher}}</td>
+           </tr>
+           <tr ng-if="!net_negative_info || net_negative_info.length==0"><td class="emptytd-mark" colspan="4">无数据</td></tr>
+        </tbody>
+      </table>
+      <!-- 互联网负面信息  end -->
+    </div>
+  </div>
+  <!-- 用户行为检测 end  -->
+  
+  <!-- 黑中介 暂时不做  start -->  
+  <div class="rd-container" style="display:none;">
+    <div class="rd-container">
+      <div class="info-title">黑中介</div>
+      <table class="rd-risksection">
+        <caption>黑中介</caption>
+        <tbody>
+          <tr>
+            <td class="grey-td">黑中介分数</td>
+            <td><span class="bg-red">5</span>（分数范围0-100，10分以下为高危人群）</td>
+          </tr>
+          <tr>
+            <td class="grey-td">直接联系人总数</td>
+            <td><span class="">30</span>（直接联系人：和被查询号码有通话记录）</td>
+          </tr>
+          <tr>
+            <td class="grey-td">直接联系人中黑名单人数</td>
+            <td><span class="">1</span>（直接联系人：和被查询号码有通话记录）</td>
+          </tr>
+          <tr>
+            <td class="grey-td">间接联系人中黑名单人数</td>
+            <td><span class="">654</span>（间接联系人：和被查询号码的直接联系人有通话记录）</td>
+          </tr>
+          <tr>
+            <td class="grey-td">引起黑名单的直接联系人数量</td>
+            <td><span class="">141</span>（直接联系人有和黑名单用户的通讯记录的号码数量）</td>
+          </tr>
+          <tr>
+            <td class="grey-td">引起黑名单的直接联系人占比</td>
+            <td><span class="">47%</span>（直接联系人有和黑名单用户的通讯记录的号码数量在直接联系人数量中的百分比）</td>
+          </tr>
+          <tr ng-if="!black_agency || black_agency.length==0"><td class="emptytd-mark" colspan="2">无数据</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <!-- 黑中介 暂时不做  end --> 
+  <!-- 出行分析  详版 start -->  
+  <div class="rd-container" ng-if="multiple">
+    <div class="rd-container">
+      <div class="info-title">出行分析</div>
+      <table class="rd-risksection">
+        <caption>出行分析</caption>
+        <thead>
+          <tr>
+            <th>时间段</th>
+            <th>出发时间</th>
+            <th>回程时间</th>
+            <th>出发地</th>
+            <th>目的地</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="item in trip_info">
+            <td>{{item.trip_type}}</td>
+            <td>{{item.trip_start_time}}</td>
+            <td>{{item.trip_end_time}}</td>
+            <td>{{item.trip_leave}}</td>
+            <td>{{item.trip_dest}}</td>
+          </tr>
+          <tr ng-if="!trip_info || trip_info.length==0"><td class="emptytd-mark" colspan="5">无数据</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <!-- 出行分析  详版 end -->  
+
+  <!-- 详版才有的  运营商数据分析  start -->  
+  <div class="rd-container" ng-if="multiple">
+    <div class="rd-container">
+      <div class="info-title">
+        <span ng-class="{'nullTip':codes['1001']!=undefined}">运营商数据分析</span>
+        <span class="codeTip" ng-if="codes['1001']">({{codes['1001']}})</span>
+      </div>
+      <table class="rd-risksection">
+        <caption>联系人信息验真</caption>
+        <thead>
+          <tr>
+            <th>联系人</th>
+            <th>最早联系时间</th>
+            <th>最晚联系时间</th>
+            <th>联系电话</th>
+            <th>是否小号</th>
+            <th>近半年通话时长</th>
+            <th>近半年通话次数</th>
+            <th>近半年短信次数</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="item in collection_contact">
+            <td>{{item.contact_name}}</td>
+            <td>{{item.trans_start}}</td>
+            <td>{{item.trans_end}}</td>
+            <td>{{item.phone_num}} {{item.phone_num_loc}}</td>
+            <td><span class="normal-em">{{item.isVirtureOperator ? '临时小号' : '非临时小号'}}</span></td>
+            <td>{{item.call_len/60 | number:0}}分钟</td>
+            <td>{{item.call_cnt || 0}}次</td>
+            <td>{{item.sms_cnt}}条</td>
+          </tr>
+          <tr ng-if="!collection_contact || collection_contact.length==0"><td class="emptytd-mark" colspan="8">无数据</td></tr>
+        </tbody>
+      </table>
+      <table class="rd-risksection m-t-50">
+        <caption>通话数据分析</caption>
+        <thead>
+          <tr>
+            <th>手机号码</th>
+            <th>互联网标识</th>
+            <th>需求类型</th>
+            <th>是否小号</th>
+            <th>归属地</th>
+            <th>联系次数</th>
+            <th>联系时长(秒)</th>
+            <th>主叫次数</th>
+            <th>被叫次数</th>
+            <th>最早联系时间</th>
+            <th>最晚联系时间</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="item in contact_list.Data">
+            <td>{{item.phone_num}}</td>
+            <td>{{item.contact_name}}</td>
+            <td>{{item.needs_type}}</td>
+            <td><span ng-class="{'normal-em':item.isVirtureOperator}">{{item.isVirtureOperator ? '临时小号' : '非临时小号'}}</span></td>
+            <td>{{item.phone_num_loc}}</td>
+            <td>{{item.call_cnt}}</td>
+            <td>{{item.call_len}}</td>
+            <td>{{item.call_out_cnt}}</td>
+            <td>{{item.call_in_cnt}}</td>
+            <td>{{item.trans_start}}</td>
+            <td>{{item.trans_end}}</td>
+          </tr>
+          <tr ng-if="!contact_list.Data || contact_list.Total==0"><td class="emptytd-mark" colspan="11">无数据</td></tr>
+        </tbody>
+        <tfoot ng-if="contact_list.Total > 0">
+          <tr>
+            <td colspan="11">
+              <div class="page-list">
+                <div class="total ng-binding"> 共有{{contact_list.Total}}条, 共{{contact_list.Pages}}页, 每页显示：{{ contact_list.PageSize }}条 </div>
+                <div class="pagination123" ng-show="contact_list.Total > 0">
+                  <a ng-class="{disabled: contact_list.CurrentPage == 1}" ng-click="firstPage('contact_list')">«</a>
+                  <a ng-class="{disabled: contact_list.CurrentPage == 1}" ng-click="prevPage('contact_list')">‹</a>
+                  <a class="active ng-binding">{{contact_list.CurrentPage}}</a>
+                  <a ng-class="{disabled: contact_list.CurrentPage == contact_list.Pages}" ng-click="nextPage('contact_list')"><span>›</span></a>
+                  <a ng-class="{disabled: contact_list.CurrentPage == contact_list.Pages}" ng-click="lastPage('contact_list')"><span>»</span></a>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+      <table class="rd-risksection m-t-50">
+        <caption>短信数据分析</caption>
+        <thead>
+          <tr>
+            <th>手机号码</th>
+            <th>互联网标识</th>
+            <th>是否小号</th>
+            <th>归属地</th>
+            <th>短信总数</th>
+            <th>发送短信条数</th>
+            <th>接收短信条数</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="item in sms_list.Data">
+            <td>{{item.phone_num}}</td>
+            <td>{{item.contact_name}}</td>
+            <td><span ng-class="{'normal-em':item.isVirtureOperator}">{{item.isVirtureOperator ? '临时小号' : '非临时小号'}}</span></td>
+            <td>{{item.phone_num_loc}}</td>
+            <td>{{item.sms_cnt}}</td>
+            <td>{{item.sms_out_cnt}}</td>
+            <td>{{item.sms_in_cnt}}</td>
+          </tr>
+          <tr ng-if="!sms_list.Data || sms_list.Total==0"><td class="emptytd-mark" colspan="7">无数据</td></tr>
+        </tbody>
+        <tfoot ng-if="sms_list.Total > 0">
+          <tr>
+            <td colspan="7">
+              <div class="page-list">
+                <div class="total ng-binding"> 共有{{sms_list.Total}}条, 共{{sms_list.Pages}}页, 每页显示：{{ sms_list.PageSize }}条 </div>
+                <div class="pagination123" ng-show="sms_list.Total > 0">
+                  <a ng-class="{disabled: sms_list.CurrentPage == 1}" ng-click="firstPage('sms_list')">«</a>
+                  <a ng-class="{disabled: sms_list.CurrentPage == 1}" ng-click="prevPage('sms_list')">‹</a>
+                  <a class="active ng-binding">{{sms_list.CurrentPage}}</a>
+                  <a ng-class="{disabled: sms_list.CurrentPage == sms_list.Pages}" ng-click="nextPage('sms_list')"><span>›</span></a>
+                  <a ng-class="{disabled: sms_list.CurrentPage == sms_list.Pages}" ng-click="lastPage('sms_list')"><span>»</span></a>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+      <table class="rd-risksection m-t-50">
+        <caption>通话人所在地区分析</caption>
+        <thead>
+          <tr>
+            <th>地区</th>
+            <th>号码次数</th>
+            <th>呼入次数</th>
+            <th>呼入次数百分比</th>
+            <th>呼入时间(分钟)</th>
+            <th>呼入时间百分比</th>
+            <th>呼出次数</th>
+            <th>呼出次数百分比</th>
+            <th>呼出时间(分钟)</th>
+            <th>呼出时间百分比</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="item in contact_region">
+            <td>{{item.region_loc}}</td>
+            <td>{{item.region_uniq_num_cnt}}</td>
+            <td>{{item.region_call_in_cnt}}</td>
+            <td>{{item.region_call_in_cnt_pct}}</td>
+            <td>{{item.region_call_in_time/60 | number:0}}</td>
+            <td>{{item.region_call_in_time_pct}}</td>
+            <td>{{item.region_call_out_cnt}}</td>
+            <td>{{item.region_call_out_cnt_pct}}</td>
+            <td>{{item.region_call_out_time/60 | number:0}}</td>
+            <td>{{item.region_call_out_time_pct}}</td>
+          </tr>
+          <tr ng-if="!contact_region || contact_region.length==0"><td class="emptytd-mark" colspan="10">无数据</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <!-- 详版才有的  运营商数据分析  end --> 
+  
+	<!-- 后一个 运营商基础数据  start，重名了，mark-->
+  <div class="rd-container">
+    <div class="info-title">
+      <span ng-class="{'nullTip':codes['1001']!=undefined}">运营商基础数据</span>
+      <span class="codeTip" ng-if="codes['1001']">({{codes['1001']}})</span>
+    </div>
+    <div class="rd-container">
+     <table class="rd-risksection">
+       <caption>手机充值记录</caption>
+       <thead>
+         <tr>
+           <th>充值时间</th>
+           <th>金额</th>
+           <th>充值来源</th>
+           <th>充值方式</th>
+         </tr>
+       </thead>
+       <tbody>
+          <tr ng-repeat="item in payments.Data">
+            <td>{{item.date}}</td>
+            <td>{{item.amount}}</td>
+            <td>{{item.paymentSource}}</td>
+            <td>{{item.paymentType}}</td>
+          </tr>
+          <tr ng-if="!payments.Data || payments.Total==0"><td class="emptytd-mark" colspan="4">无数据</td></tr>
+       </tbody>
+       <tfoot ng-if="payments.Total > 0">
+         <tr>
+           <td colspan="4">
+             <div class="page-list">
+               <div class="total ng-binding"> 共有{{payments.Total}}条, 共{{payments.Pages}}页, 每页显示：{{ payments.PageSize }}条 </div>
+               <div class="pagination123" ng-show="payments.Total > 0">
+                 <a ng-class="{disabled: payments.CurrentPage == 1}" ng-click="firstPage('payments')">«</a>
+                 <a ng-class="{disabled: payments.CurrentPage == 1}" ng-click="prevPage('payments')">‹</a>
+                 <a class="active ng-binding">{{payments.CurrentPage}}</a>
+                 <a ng-class="{disabled: payments.CurrentPage == payments.Pages}" ng-click="nextPage('payments')"><span>›</span></a>
+                 <a ng-class="{disabled: payments.CurrentPage == payments.Pages}" ng-click="lastPage('payments')"><span>»</span></a>
+               </div>
+             </div>
+           </td>
+         </tr>
+       </tfoot>
+     </table>
+     <table class="rd-risksection m-t-50" ng-if="!multiple">
+        <caption>手机消费数据</caption>
+        <thead>
+          <tr>
+            <th>月份</th>
+            <th>帐单金额</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="item in bills_basic.Data">
+            <td>{{item.month}}</td>
+            <td>{{item.total_amount}}</td>
+          </tr>
+          <tr ng-if="!bills_basic.Data || bills_basic.Total==0"><td class="emptytd-mark" colspan="2">无数据</td></tr>
+        </tbody>
+        <tfoot ng-if="bills_basic.Total > 0">
+          <tr>
+            <td colspan="2">
+              <div class="page-list">
+                <div class="total ng-binding"> 共有{{bills_basic.Total}}条, 共{{bills_basic.Pages}}页, 每页显示：{{bills_basic.PageSize }}条 </div>
+                <div class="pagination123" ng-show="bills_basic.Total > 0">
+                  <a ng-class="{disabled: bills_basic.CurrentPage == 1}" ng-click="firstPage('bills_basic')">«</a>
+                  <a ng-class="{disabled: bills_basic.CurrentPage == 1}" ng-click="prevPage('bills_basic')">‹</a>
+                  <a class="active ng-binding">{{bills_basic.CurrentPage}}</a>
+                  <a ng-class="{disabled: bills_basic.CurrentPage == bills_basic.Pages}" ng-click="nextPage('bills_basic')"><span>›</span></a>
+                  <a ng-class="{disabled: bills_basic.CurrentPage == bills_basic.Pages}" ng-click="lastPage('bills_basic')"><span>»</span></a>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+     <table class="rd-risksection m-t-50" ng-if="multiple">
+        <caption>手机消费数据</caption>
+        <thead>
+          <tr>
+            <th>月份</th>
+            <th>手机运营商</th>
+            <th>手机归属地</th>
+            <th>呼叫次数</th>
+            <th>主叫次数</th>
+            <th>主叫时长(分钟)</th>
+            <th>被叫次数</th>
+            <th>被叫时长(分钟)</th>
+            <th>短信条数</th>
+            <th>月流量(MB)</th>
+            <th>帐单金额</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="item in bills_detail.Data">
+            <td>{{item.month}}</td>
+            <td>{{item.cell_operator}}</td>
+            <td>{{item.cell_loc}}</td>
+            <td>{{item.call_cnt}}</td>
+            <td>{{item.call_out_cnt}}</td>
+            <td>{{item.call_out_time | number:2}}</td>
+            <td>{{item.call_in_cnt}}</td>
+            <td>{{item.call_in_time | number:2}}</td>
+            <td>{{item.sms_cnt}}</td>
+            <td>{{item.net_flow | number:2}}</td>
+            <td>{{item.total_amount}}</td>
+          </tr>
+          <tr ng-if="!bills_detail.Data || bills_detail.Total==0"><td class="emptytd-mark" colspan="11">无数据</td></tr>
+        </tbody>
+        <tfoot ng-if="bills_detail.Total > 0">
+          <tr>
+            <td colspan="11">
+              <div class="page-list">
+                <div class="total ng-binding"> 共有{{bills_detail.Total}}条, 共{{bills_detail.Pages}}页, 每页显示：{{bills_detail.PageSize }}条 </div>
+                <div class="pagination123" ng-show="bills_detail.Total > 0">
+                  <a ng-class="{disabled: bills_detail.CurrentPage == 1}" ng-click="firstPage('bills_detail')">«</a>
+                  <a ng-class="{disabled: bills_detail.CurrentPage == 1}" ng-click="prevPage('bills_detail')">‹</a>
+                  <a class="active ng-binding">{{bills_detail.CurrentPage}}</a>
+                  <a ng-class="{disabled: bills_detail.CurrentPage == bills_detail.Pages}" ng-click="nextPage('bills_detail')"><span>›</span></a>
+                  <a ng-class="{disabled: bills_detail.CurrentPage == bills_detail.Pages}" ng-click="lastPage('bills_detail')"><span>»</span></a>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+  <!-- 后一个 运营商基础数据   end ，重名了，mark --> 
+
+  <!-- 详版才有  银联消费行为分析 start --> 
+  <div class="rd-container" ng-if="multiple">
+    <div class="info-title">银联消费行为分析</div>
+    <div class="rd-container">
+	    <table class="rd-risksection">
+	      <caption>消费数据分析</caption>
+	      <thead>
+	        <tr>
+	          <th width="60%">分析项</th>
+	          <th width="40%">分析结果</th>
+	        </tr>
+	      </thead>
+	      <tbody>
+	         <tr ng-repeat="item in consumption">
+	           <td>{{item.name}}</td>
+	           <td>{{item.state}}</td>
+	         </tr>
+	         <tr ng-if="!consumption || consumption.length==0"><td class="emptytd-mark" colspan="2">无数据</td></tr>
+	      </tbody>
+	    </table>
+	    <table class="rd-risksection m-t-50">
+	      <caption>交易情况分析</caption>
+	      <thead>
+	        <tr>
+	          <th width="60%">指标名称</th>
+	          <th width="40%">指标结果</th>
+	        </tr>
+	      </thead>
+	      <tbody>
+	         <tr ng-repeat="item in transaction">
+	           <td>{{item.name}}</td>
+	           <td>{{item.state}}</td>
+	         </tr>
+	         <tr ng-if="!transaction || transaction.length==0"><td class="emptytd-mark" colspan="2">无数据</td></tr>
+	      </tbody>
+	    </table>
+    </div>
+  </div>
+  <!-- 详版才有  银联消费行为分析 end --> 
+    
+  <!-- 数据来源 start-->
+  <div class="rd-container">
+		<div class="info-title">数据来源</div>
+		<div class="rd-container">
+			<table class="rd-risksection list-datasource">
+			  <caption>绑定数据源信息</caption>
+			  <thead style="display:none">
+			    <tr>
+			      <th>状态</th>
+			      <th>数据项</th>
+			    </tr>
+			  </thead>
+			  <tbody>
+			     <tr ng-repeat="item in datasource">
+			       <td>
+			       	<span class="icon-ok" ng-if="item.state=='已采集'"></span>
+			       	<span class="icon-grey" ng-if="item.state=='未采集'"></span>
+			       	{{item.name}}
+			       </td>
+			     </tr>
+			     <tr ng-if="!datasource || datasource.length==0"><td class="emptytd-mark" colspan="2">无数据</td></tr>
+			  </tbody>
+			</table>
+		</div>
+	</div>
+	<!-- 数据来源 end-->
+  
+  <div class="rd-main rd-footer m-5-5">Copyright @ 上海谷穗数据科技有限公司  版权所有</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<title>CISCO provider</title>
+<script src="../../../jquery/jquery/jquery-1.4.4.min.js"></script>
+<script src="jabberwerx.js"></script>
+<script src="finessenongadget.js"></script>
+<script>
+  var RESTon = parent.RESTon;
+  function log(msg, type) {
+    switch (type) {
+    case "request":
+      logRequest(msg);
+      break;
+    case "event":
+      logEvent(msg);
+      break;
+    default:
+      logRequest(msg);
+      break;
+    }
+  }
+  function logRequest(request) {
+    if (window.console)
+      console.info(request);
+  }
+  function logEvent(event) {
+    if (window.console)
+      console.info(event);
+  }
+  function parseXML(data) {
+    var xml, tmp;
+    if (!data || typeof data !== "string") {
+      return null;
+    }
+    try {
+      if (window.DOMParser) { // Standard
+        tmp = new window.DOMParser();
+        xml = tmp.parseFromString(data, "text/xml");
+      } else { // IE
+        xml = new window.ActiveXObject("Microsoft.XMLDOM");
+        xml.async = "false";
+        xml.loadXML(data);
+      }
+    } catch (e) {
+      xml = undefined;
+    }
+    if (!xml || !xml.documentElement || xml.getElementsByTagName("parsererror").length) {
+      jQuery.error("Invalid XML: " + data);
+    }
+    return xml;
+  };
+  function on(handle) {
+    RESTon.on("Phone", function(event, phoneEvent, data) {
+      var args = [];
+      for (var i = 1; i < arguments.length; i++)
+        args[i - 1] = arguments[i];
+      handle.apply(phone, args);
+    });
+  }
+  function fire(event, data) {
+    var args = [ "Phone" ];
+    for (var i = 0; i < arguments.length; i++)
+      args[i + 1] = arguments[i];
+    log(event, event);
+    RESTon.fire.apply(phone, args);
+  }
+  var imp, agentid, agentpw, dn, domain, logSwitch;
+  var ani, dnis, callid, auxcode = 1, consultid, consultdn;
+  var _jwClient;
+  var activeType;
+  var phoneStatus = "CLOSED";
+  var agentStatus = "UNKNOWN";
+  var callStatus = "FREE";
+  var mainCall = {
+    id : 0,
+    ani : "",
+    dnis : "",
+    status : "FREE",
+    active : false
+  };
+  var consultCall = {
+    id : 0,
+    ani : "",
+    dnis : "",
+    status : "FREE",
+    active : false
+  };
+  var conferenceCall = {
+    id : 0,
+    ani : "",
+    dnis : "",
+    status : "FREE",
+    active : false
+  };
+  function onClientError() {
+    //writeLog("Event Service Connect failing!", "style='color:red;'");
+    alert("Event Service Connect failing!");
+  }
+  function replaceAll(str, stringToReplace, replaceWith) {
+    var result = str, index = 1;
+    while (index > 0) {
+      result = result.replace(stringToReplace, replaceWith);
+      index = result.indexOf(stringToReplace);
+    }
+    return result;
+  }
+  function setCallStatus(callid, status) {
+    if (mainCall.active && mainCall.id == callid)
+      mainCall.status = status;
+    else if (consultCall.active && consultCall.id == callid)
+      consultCall.status = status;
+  }
+  function setCallStatusDn(dn,status){
+    if (mainCall.active && mainCall.ani == dn)
+      mainCall.status = status;
+    else if (consultCall.active && consultCall.ani == dn)
+      consultCall.status = status;
+  }
+  function clearCallInfo(callid) {
+    if (mainCall.id == callid)
+      mainCall = {
+        id : 0,
+        ani : "",
+        dnis : "",
+        status : "FREE",
+        active : false
+      };
+    else if (consultCall.id == callid)
+      consultCall = {
+        id : 0,
+        ani : "",
+        dnis : "",
+        status : "FREE",
+        active : false
+      };
+  }
+  function resetCall(){
+    mainCall = {
+        id : 0,
+        ani : "",
+        dnis : "",
+        status : "FREE",
+        active : false
+      };
+    consultCall = {
+        id : 0,
+        ani : "",
+        dnis : "",
+        status : "FREE",
+        active : false
+      };
+  }
+  function getXmlText(node) {
+    var ua = navigator.userAgent;
+    if (ua.indexOf("MSIE 8") > 0)
+      return node.text;
+    else
+      return node.textContent;
+  }
+  function eventHandler(data) {
+    var sxml = data.selected.firstChild.data;
+    var xml = parseXML(sxml);
+    var elements = xml.getElementsByTagName("event")
+    var event = getXmlText(elements[elements.length - 1]);
+    elements = xml.getElementsByTagName("state");
+    var state = getXmlText(elements[elements.length - 1]);
+    /*var logger = $caf.newLogger(" @ Recive event, event:" + event + ",state:" + state, "style='color:gray;'");
+    logger.printXML(sxml);
+    logger.close();*/
+    log("@ Recive event, event:" + event + ",state:" + state);
+    log("Event xml:" + sxml);
+    var callType = "";
+    switch (event) {
+    case "PUT":
+      switch (state) {
+      case "READY":
+        agentStatus = "READY";
+        //writeLog(" <=Phone.OnReady", "style='color:black;'");
+        fire("OnReady");
+        break;
+      case "NOT_READY":
+        agentStatus = "AUX";
+        //writeLog(" <=Phone.OnAux ", "style='color:black;'");
+        fire("OnAux");
+        break;
+      }
+      break;
+    }
+    switch (event) {
+    case "PUT":
+      switch (state) {
+       case "INITIATED":
+        if(mainCall.active){
+          var toAddress = getXmlText(xml.getElementsByTagName("toAddress")[0]);
+          var id = getXmlText(xml.getElementsByTagName("id")[0]);
+          consultdn = toAddress;
+          consultid = id;
+          callStatus = "CONSULTING";
+          consultCall.ani = getXmlText(xml.getElementsByTagName("fromAddress")[0]);
+          consultCall.dnis = toAddress;
+          consultCall.id = id;
+          consultCall.status = "DIAL";
+          consultCall.active = true;
+          //writeLog(" <=Phone.OnConsulting " + dnis, "style='color:magenta;'");
+          fire("OnConsulting");
+        }else{
+          ani = getXmlText(xml.getElementsByTagName("fromAddress")[0]);
+          dnis = getXmlText(xml.getElementsByTagName("toAddress")[0]);
+          callid = getXmlText(xml.getElementsByTagName("id")[0]);
+          callStatus = "DIAL";
+          mainCall.ani = ani;
+          mainCall.dnis = dnis;
+          mainCall.id = callid;
+          mainCall.active = true;
+          mainCall.status = "DIAL"
+          //writeLog(" <=Phone.OnDial " + dnis, "style='color:magenta;'");
+          fire("OnDial");
+        }
+        break;
+      case "HOLD":
+        var ex = getXmlText(xml.getElementsByTagName("extension")[0]);
+        setCallStatusDn(ex, "HOLD");  
+        break;
+      case "TALKING":
+        if(callType != "CONFERENCE"){
+          var extension = getXmlText(xml.getElementsByTagName("extension")[0]);
+          mailCall.status = "TALK";
+        }else{
+          mainCall.status = "CONFERENCE";
+          callStatus = "CONFERENCE";
+          fire("OnConference");
+        }
+        /*if (activeType == "HOLD") {
+          activeType = "UNHOLD";
+        } else if (activeType == "CONFERENCE") {
+          callStatus = "CONFERENCE";
+          //writeLog(" <=Phone.OnConference", "style='color:black;'");
+          fire("OnConference");
+          activeType = "";
+        } else
+          activeType = "TALK";*/
+        break;
+      case "LOGOUT":
+        phoneStatus = "CLOSED";
+        //writeLog(" <=Phone.OnClosed", "style='color:black;'");
+        resetCall();
+        fire("OnClosed");
+        break;
+      case "ACTIVE":
+        if (mainCall.active && !consultCall.active) {
+          if(mainCall.status == "DIAL" || mainCall.status == "TALK"){
+            callStatus = "TALK";
+            mainCall.status = "TALK";
+            fire("OnTalk");
+          }else if(mainCall.status == "HOLD"){
+            callStatus = "HOLD";
+            fire("OnHold");
+          }
+        } else if (mainCall.active && consultCall.active) {
+          if(consultCall.status =="DIAL"){
+            consultCall.status = "TALK";
+            mainCall.status = "HOLD";
+            callStatus = "CONSULTED";
+            fire("OnConsulted");
+          }
+        }
+       break;
+      }
+      break;
+    case "POST":
+      switch (state) {
+      case "ALERTING":
+        ani = getXmlText(xml.getElementsByTagName("fromAddress")[0]);
+        dnis = getXmlText(xml.getElementsByTagName("toAddress")[0]);
+        callid = getXmlText(xml.getElementsByTagName("id")[0]);
+        mainCall.ani = ani;
+        mainCall.dnis = dnis;
+        mainCall.id = callid;
+        mainCall.active = true;
+        mainCall.status = "RING";
+        callStatus = "RING";
+        fire("OnRing");
+        break;
+      }
+      break;
+    case "DELETE":
+      switch (state) {
+      case "DROPPED":
+        callType = getXmlText(xml.getElementsByTagName("callType")[0]);
+      case "ALERTING":
+      case "INITIATED":
+      case "ACTIVE":
+        var id = getXmlText(xml.getElementsByTagName("id")[0]);
+        if (mainCall.active && consultCall.active) {
+          clearCallInfo(id);
+          if(mainCall.active) callStatus = mainCall.status;
+          else if(consultCall.active) callStatus = consultCall.status;
+          if(callStatus == "TALK"&&callType != "CONFERENCE") fire("OnTalk");
+          else if(callStatus == "HOLD"&&callType != "CONFERENCE") fire("OnHold");
+        } else if (mainCall.active || consultCall.active) {
+          clearCallInfo(id);
+          callStatus = "FREE";
+          fire("OnReleased");
+        }
+        break;
+      }
+      break;
+    }
+  }
+  function signInBack(data) {
+    if (data === 202) {
+      //writeLog("=> RESPONS " + data, "style='color:gray;'");
+      eventConnect();
+      phoneStatus = "OPENNING";
+      //writeLog(" <=Phone.OnOpenning", "style='color:black;'");
+      fire("OnOpenning");
+      phoneStatus = "OPENED";
+      //writeLog(" <=Phone.OnOpened", "style='color:black;'");
+      fire("OnOpened");
+      agentStatus = "AUX";
+      //writeLog(" <=Phone.OnAux", "style='color:black;'");
+      fire("OnAux");
+    }
+  }
+  function signOutBack(data) {
+    if (data === 202) {
+      agentStatus = "UNKNOWN";
+      phoneStatus = "CLOSING";
+      //writeLog(" <=Phone.OnClosing", "style='color:black;'");
+      fire("OnClosing");
+    }
+  }
+  function handler(data) {
+    //writeLog("=> RESPONS " + data, "style='color:gray;'");
+  }
+  function writeLog(mes, style) {
+    var logger = $caf.newLogger(mes, style);
+    logger.close();
+  }
+  function writeXml(xml, logger) {
+    /*try{
+      for( var k in json){
+        var child=json[k];
+        if(typeof (child)=="object"){
+          logger.beginList(k,true);
+          arguments.callee(child,logger);
+          logger.endList();
+        }else
+          logger.print(""+k,""+child);
+      }
+    }catch(e){
+    }*/
+  }
+  function parseXml(xml) {
+    if (jQuery.browser.msie) {
+      var xmlDoc = new ActiveXObject("Microsoft.XMLDOM");
+      xmlDoc.loadXML(xml);
+      xml = xmlDoc;
+    }
+    return xml;
+  }
+  function mackCallHandler(data) {
+    if (data.response == "success") {
+      //writeLog("=> makeCallSuccess,callId:" + data.callId, "style='color:black;'");
+      log("=> makeCallSuccess,callId:" + data.callId);
+    }
+  }
+  function eventConnect() {
+    if (window.jabberwerx) {
+      var jid = agentid + "@" + domain, _jwClient = new jabberwerx.Client("cisco");
+      jwArgs = {
+        httpBindingURL : "/http-bind",
+        errorCallback : onClientError,
+        successCallback : function() {
+          imp.setResource(_jwClient.resourceName);
+        }
+      };
+      jabberwerx._config.unsecureAllowed = true;
+      _jwClient.event("messageReceived").bindWhen("event[xmlns='http://jabber.org/protocol/pubsub#event'] items item notification", eventHandler);
+      _jwClient.connect(jid, agentpw, jwArgs);
+    } else {
+      alert("CAXL library not found. Please download from http://developer.cisco.com/web/xmpp/resources");
+    }
+  }
+  function config(args) {
+    log("Config:" + args);
+    /*var logger=$caf.newLogger(" @ Phone config","style='color:gray;'");
+    this.logJs(args,logger);
+    logger.close();*/
+    if (args.dn)
+      dn = args.dn;
+    if (args.agentid)
+      agentid = args.agentid;
+    if (args.agentpw)
+      agentpw = args.agentpw;
+    if (args.domain)
+      domain = args.domain;
+  }
+  function open() {
+    ////writeLog(" =>Phone.open()","style='color:blue;'");
+    log(" =>Phone.open()");
+    imp = new Finesse(agentid, agentpw);
+    if (imp) {
+      imp.signIn(agentid, dn, true, signInBack, signInBack);
+    }
+  }
+  function close() {
+    //writeLog(" =>Phone.close()", "style='color:blue;'");
+    imp.signOut(agentid, dn, null, signOutBack, signOutBack);
+  }
+  function ready() {
+    //writeLog(" =>Phone.ready()", "style='color:blue;'");
+    imp.changeState(agentid, "READY", null, handler, handler);
+  }
+  function aux(code) {
+    if (code == 2)
+      auxcode = 2;
+    else if (code == 3)
+      auxcode = 3;
+    else if (code == 4)
+      auxcode = 4;
+    else
+      auxcode = 1;
+    //writeLog(" =>Phone.aux(" + code + ")", "style='color:blue;'");
+    imp.changeState(agentid, "NOT_READY", null, handler, handler);
+  }
+  function dial(dialNum) {
+    //writeLog(" =>Phone.dial(" + dialNum + ")", "style='color:blue;'");
+    imp.makeCall(dialNum, dn, mackCallHandler, handler);
+  }
+  function answer() {
+    //writeLog(" =>Phone.answer()", "style='color:blue;'");
+    imp.answerCall(callid, dn, handler, handler);
+  }
+  function release() {
+    //writeLog(" =>Phone.release()", "style='color:blue;'");
+    imp.dropCall(callid, dn, handler, handler);
+  }
+  function hold() {
+    //writeLog(" =>Phone.hold()", "style='color:blue;'");
+    imp.holdCall(callid, dn, handler, handler);
+  }
+  function unhold() {
+    //writeLog(" =>Phone.unhold()", "style='color:blue;'");
+    imp.retrieveCall(callid, dn, handler, handler);
+  }
+  function consult(consultDN) {
+    //writeLog(" =>Phone.consult(" + consultDN + ")", "style='color:blue;'");
+    imp.consultCall(callid, dn, consultDN, handler, handler);
+  }
+  function reconnect() {
+    //writeLog(" =>Phone.reconnect()", "style='color:blue;'");
+    imp.reconnectCall(callid, dn, handler, handler);
+  }
+  function transfer(transferDN) {
+    //writeLog(" =>Phone.transfer()", "style='color:blue;'");
+    if (transferDN)
+      imp.transfer(callid, dn, transferDN, handler, handler);
+    else
+      imp.transfer(callid, dn, consultdn, handler, handler);
+  }
+  function conference(conferenceDN) {
+    ////writeLog(" =>Phone.conference()", "style='color:blue;'");
+    log(" =>Phone.conference()");
+    if (conferenceDN)
+      imp.conference(callid, dn, conferenceDN, handler, handler);
+    else
+      imp.conference(callid, dn, consultdn, handler, handler);
+  }
+  function getDN() {
+    return dn;
+  }
+  function getAgentid() {
+    return agentid;
+  }
+  function getAuxRC() {
+    return auxcode;
+  }
+  function getANI() {
+    return ani;
+  }
+  function getDNIS() {
+    return dnis;
+  }
+  function getPhoneStatus() {
+    return phoneStatus;
+  }
+  function getAgentStatus() {
+    return agentStatus;
+  }
+  function getCallStatus() {
+    return callStatus;
+  }
+  function canOpen() {
+    return phoneStatus == "CLOSED";
+  }
+  function canClose() {
+    return phoneStatus == "OPENED" && callStatus == "FREE";
+  }
+  function canReady() {
+    return phoneStatus == "OPENED" && callStatus == "FREE" && agentStatus != "READY";
+  }
+  function canAux() {
+    return phoneStatus == "OPENED" && callStatus == "FREE" && agentStatus != "AUX";
+  }
+  function canAcw() {
+    return false;
+  }
+  function canAnswer() {
+    return phoneStatus == "OPENED" && callStatus == "RING";
+  }
+  function canRelease() {
+    return phoneStatus == "OPENED" && (callStatus == "DIAL" || callStatus == "RING" || callStatus == "TALK" || callStatus == "CONFERENCE");
+  }
+  function canDial() {
+    return phoneStatus == "OPENED" && agentStatus != "READY" && callStatus == "FREE";
+  }
+  function canHold() {
+    return phoneStatus == "OPENED" && callStatus == "TALK";
+  }
+  function canUnhold() {
+    return phoneStatus == "OPENED" && callStatus == "HOLD";
+  }
+  function canConsult() {
+    return phoneStatus == "OPENED" && callStatus == "TALK";
+  }
+  function canComplete() {
+    return phoneStatus == "OPENED" && callStatus == "CONSULTED";
+  }
+  function canConference() {
+    return false;
+  }
+  function canTransfer() {
+    return false;
+  }
+  function canReconnect() {
+    return phoneStatus == "OPENED" && (callStatus == "CONSULTING" || callStatus == "CONSULTED");
+  }
+  function canReleaseLine() {
+    return false;
+  }
+  function canFinish() {
+    return false;
+  }
+  function canAlternate() {
+    return true;
+  }
+  var phone = {
+    on : on,
+    open : open,
+    config : config,
+    close : close,
+    ready : ready,
+    aux : aux,
+    dial : dial,
+    answer : answer,
+    release : release,
+    hold : hold,
+    unhold : unhold,
+    consult : consult,
+    reconnect : reconnect,
+    transfer : transfer,
+    conference : conference,
+    getDN : getDN,
+    getAgentid : getAgentid,
+    getAuxRC : getAuxRC,
+    getANI : getANI,
+    getDNIS : getDNIS,
+    getPhoneStatus : getPhoneStatus,
+    getAgentStatus : getAgentStatus,
+    getCallStatus : getCallStatus,
+    canOpen : canOpen,
+    canClose : canClose,
+    canReady : canReady,
+    canAux : canAux,
+    canAcw : canAcw,
+    canAnswer : canAnswer,
+    canRelease : canRelease,
+    canDial : canDial,
+    canHold : canHold,
+    canUnhold : canUnhold,
+    canConsult : canConsult,
+    canComplete : canComplete,
+    canConference : canConference,
+    canTransfer : canTransfer,
+    canReconnect : canReconnect,
+    canReleaseLine : canReleaseLine,
+    canFinish : canFinish,
+    canAlternate : canAlternate
+  }
+  RESTon.assemble("Phone", phone);
+</script>
+</head>
+<body>
+</body>
+</html>

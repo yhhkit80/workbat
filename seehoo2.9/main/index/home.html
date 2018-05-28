@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Main</title>
+<script type="text/javascript" src="../../RESTon.js" djConfig="parseOnLoad:true"></script>
+<link rel="stylesheet" href="../css/home.css">
+</head>
+<body>
+<div id="benchList" class="bench-list"></div>
+<script>
+$(function(){
+  $.get('../../data/bench_list.json',function(data){
+    $.each(data,function(i,item){
+      var dom = $('<a href="javascript:;" class="item">'+
+        '<div class="bench-img" style="background-image:url('+item.img+')"></div>'+
+        '<div class="bench-text">'+
+        '  <span class="'+item.color+'">'+item.title+'</span>'+
+        '  <span>('+item.number+')</span>'+
+        '</div>').on('click',function(e){
+          RESTon.at('index').fire('OpenTab',
+            { url: item.url, 
+              closable : true, 
+              title : item.title, 
+              param : item
+            }
+          );
+      });
+      $('#benchList').append(dom);
+    });
+  });
+});
+</script>
+</body>
+</html>

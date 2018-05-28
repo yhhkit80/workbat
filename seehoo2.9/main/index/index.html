@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Main</title>
+<script type="text/javascript" src="../../RESTon.js" djConfig="parseOnLoad:true"></script>
+<link rel="stylesheet" type="text/css" href="../css/navi.css">
+<script type="text/javascript" src="../../main/js/domain.js"></script>
+</head>
+<body id="body" class="easyui-layout" data-options="fit:true">
+  <div id="top" data-options="region:'north',border:false" style="border-bottom:1px solid #ddd; height: 52px; background: none; overflow: hidden;">
+    <div class="topnav">
+      <div class="top-logobox" onclick="showHomeTab()"></div>
+      <ul class="nav-menu">
+         <li> <a href="javascript:openMessageTab();" class="nav-ring"></a></li>
+         <li> <a href="javascript:openRemindTab();" class="nav-remind"></a></li>
+         <li> <a href="javascript:logout();" class="nav-logout"></a></li>
+         <li> <a href="javascript:showUserInfo();" class="nav-user"></a></li>
+      </ul>
+    </div>
+    <div id="infoEdit"></div>
+  </div>
+  <!--main-center-box-->
+  <div id="center" data-options="region:'center',split:true,border:false" style="position: relative; background: none; overflow: hidden;">
+    <div id="inbody" class="easyui-layout" data-options="fit:true,border:false">
+      <!--left-->
+      <div id="left-box" data-options="region:'west',title:'导航菜单',split:true,border:true" style="width:230px;">
+        <ul id="tree"></ul> 
+      </div>
+
+      <!--right content-->
+      <div data-options="region:'center',split:true,border:false">
+        <div id="tab-box" data-options="fit:true,border:false" class="easyui-tabs"></div>
+  	  </div>
+  	  <div id="contextMenu" class="easyui-menu" style="display:none;width:150px;">   
+  	    <div onclick="$('#tab-box').tabs('updateCurrent')">刷新当前标签页</div> 
+  	    <div onclick="$('#tab-box').tabs('closeCurrent')">关闭标签页</div>
+  	    <div onclick="$('#tab-box').tabs('closeOther')">关闭其他标签页</div>
+  	    <div onclick="$('#tab-box').tabs('closeLeft')">关闭左侧标签页</div>
+  	    <div onclick="$('#tab-box').tabs('closeRight')">关闭右侧标签页</div>
+  	    <div class="menu-sep"></div>
+  	    <div onclick="$('#tab-box').tabs('closeAll')">关闭所有标签页</div>
+  	  </div>
+    </div>
+  </div>
+  <script>
+  $(function(){
+    //打开默认主页
+    showHomeTab();
+    $('#tree').tree({ 
+      method: 'get',
+      animate: true,
+      url:'../../data/navi-treedata.json',
+      onExpand: function(node){
+        var nodeRoot = $('#tree').tree('getRoot',node.target).target;
+        if(node.target == nodeRoot) $(nodeRoot).addClass('node-expanded');
+      },
+      onCollapse: function(node){
+        var nodeRoot = $('#tree').tree('getRoot',node.target).target;
+        if(node.target == nodeRoot) $(nodeRoot).removeClass('node-expanded');
+      },
+      onClick : function(node){
+        var nodeRoot = $('#tree').tree('getRoot',node.target).target;
+        $('.tree-root-active').removeClass('tree-root-active');
+        $(nodeRoot).addClass('tree-root-active');
+        var isLeaf = $('#tree').tree('isLeaf',node.target);
+        if(isLeaf && node.childrenUrl){
+	        $.get(node.childrenUrl,function(res){
+	          $('#tree').tree('append', {
+	            parent: node.target,
+	            data: res
+	          })
+	        });
+        }else if(!isLeaf) {
+          $("#tree").tree("toggle",node.target);
+        }
+        var roots = $("#tree").tree('getRoots');
+        $.each(roots, function(i,root){
+          if(root.target!=nodeRoot){
+            $('#tree').tree('collapse',root.target);
+          }
+        });
+        //如果有节点数据中带url，不管是否叶子节点都会在右边标签中打开
+        if(node.url){
+          var options={
+              title : node.text,
+              closable : true,
+              url : node.url,
+              inner : node.inner,
+              param : {id: node.id}
+          }
+          openTab(options);
+        }
+      }
+    }); 
+    $("#tab-box").tabs({
+      onSelect : function(title,index){
+        var tab = $('#tab-box').tabs('getSelected').panel('options').param;
+        if(tab.id) {
+          var node = $('#tree').tree('find', tab.id);
+          if(node) $('#tree').tree('select', node.target);//如果是左边菜单中有的话，定位到该菜单
+        }
+      },
+      onContextMenu : function(e,title,index){
+        if(title=='主页') return;
+        e.preventDefault();
+        $("#tab-box").tabs('select',index);
+        $('#contextMenu').menu('show', {    
+          left: e.pageX,    
+          top: e.pageY    
+        });
+      }
+    });
+  })
+      function openTab(options){
+        if ($("#tab-box").tabs("exists", options.title)) {
+          $("#tab-box").tabs("select", options.title)
+        } else {
+          if(options.inner){
+            options.href=options.url;
+            $("#tab-box").tabs("add", options)
+          }else{
+            var url = options.url;
+            delete options["href"];
+            options.content = '<iframe src="' + url + '" scrolling=auto frameborder=0 style="display:block;width:100%;height:100%;"></iframe>';
+            $("#tab-box").tabs("add", options)
+          }
+        }
+      }
+      window['domain'] = 'index';
+      RESTon.at("index").on("OpenTab",function(event,options){
+        openTab(options);
+      });
+      function showHomeTab(){
+        var options={
+            title : '主页',
+            closable : false,
+            url : './home.html',
+            inner : false,
+            param : {id: 'home'}
+        }
+        openTab(options);
+      }
+      function openMessageTab(){
+        var options={
+            title : '消息',
+            closable : true,
+            url : './message.html',
+            inner : false,
+            param : {id: 'message'}
+        }
+        openTab(options);
+      }
+      function openRemindTab(){
+        var options={
+            title : '提醒',
+            closable : true,
+            url : './remind.html',
+            inner : false,
+            param : {id: 'remind'}
+        }
+        openTab(options);
+      }
+      function logout(){
+        $.messager.confirm('确认','确认退出系统？',function(flag){
+          if(flag){
+            top.location.reload();
+          }
+        });
+      }
+      function showUserInfo(){
+        
+      }
+    </script>
+</body>
+</html>

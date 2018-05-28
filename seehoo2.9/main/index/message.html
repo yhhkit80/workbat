@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>消息</title>
+<script type="text/javascript" src="../../RESTon.js" djConfig="parseOnLoad:true"></script>
+</head>
+<body class="easyui-layout header-blue-left" data-options="fit:true">
+  <div data-options="region:'center',title:'待办任务',border:false">
+    <!--  <div class="blue-header-hover"></div>-->
+    <table id="queryResult" class="easyui-datagrid">
+      <thead>
+        <tr>
+          <th data-options="field:'ID',title:'操作',align:'left',formatter:fieldOper, width:100"></th>
+          <th data-options="field:'TASKNAME',title:'任务名称',align:'left', width:150"></th>
+          <th data-options="field:'NODENAME',title:'节点名称',align:'left',width:150"></th>
+          <th data-options="field:'TASKNUM',title:'待办任务数量',align:'left',width:100"></th>
+        </tr>
+      </thead>
+    </table>
+  </div>
+<script>
+$(function(){
+  $('#queryResult').datagrid({
+    method: 'get',
+    url:'../../data/home_datagrid.json',
+    fit : true,
+    fitColumns : true,
+    pagination : true,
+    border : false,
+    rownumbers : true,
+    singleSelect : true,
+    striped : true,
+}).datagrid('getPager').pagination({
+  // 导出全部按钮
+  buttons : [ {
+    iconCls : 'icon-export-csv',
+    text : '导出',
+    handler : exportData
+  } ]
+});  
+});
+var initParam;
+function fieldOper(value, row, index) {
+  return '<span style="color:#21ADCF;cursor:pointer;" onclick="viewRow(' + index + ')">' + '查看' + '</span>';
+}
+function viewRow(index){
+  openCaseProc($('#queryResult').datagrid('getRows')[index]);
+}
+function openCaseProc(row) {
+  RESTon.at('index').fire('OpenTab',
+    { url: row.url, 
+      closable : true, 
+      ID : row.ID, 
+      title : row.NODENAME, 
+      param : row
+    }
+  );
+};
+// 列表查询
+function querySubmit() {
+  var queryParam = $('#queryForm').serializeObject();
+  if(!checkQueryDay(queryParam)) {
+    $.messager.alert('提示','请选择统计时间！','info');
+    return false;
+  };
+  initParam = queryParam;
+  initParam.operId = user.id;
+  // 列表查询
+  $('#queryResult').datagrid({
+    url : '../../data/home_datagrid.json',
+    queryParams : initParam
+  }).datagrid('getPager').pagination({
+    // 导出全部按钮
+    buttons : [ {
+      iconCls : 'icon-download',
+      text : '导出全部',
+      handler : exportData
+    } ]
+  });
+};
+//导出全部，功能块
+function exportData() {
+  if($('#export_down').length) $('#export_down').remove();
+  var rows = $('#queryResult').datagrid('getRows');
+  if(!rows.length || !initParam) {
+    $.messager.alert('提示','没有符合条件的记录，请重新查询！','info');
+    return false;
+  };
+  var param = jQuery.extend(true,{}, initParam);
+  // 隐藏iframe传查询条件，返回csv文件
+  var data = JSON.stringify(param);
+  data = encodeURI(encodeURI(data));
+  var iframe = $('<iframe id="export_down">');
+  iframe.css({'display':'none'});
+  iframe.attr('target','_blank');
+  //iframe.attr('src',RESTon.rootPath('/reston/report/urgereport/capacity/exportCapacity.jjs?data='+data));
+  $('body').append(iframe);
+
+};
+</script>
+</body>
+</html>

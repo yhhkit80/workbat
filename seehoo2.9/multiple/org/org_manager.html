@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>组织机构管理</title>
+<script type="text/javascript" src="../../RESTon.js"></script>
+<style>
+.tree-node {
+  vertical-align: top;
+  height: 18px;
+  line-height:18px;
+}
+.tree-title {
+  vertical-align: top;
+  line-height: 18px;
+  margin-left:0px;
+}
+.tree-node-selected {
+  line-height:18px;
+}
+.easyui-tree li .tree-file, .common-tree li .tree-file,.tree-folder {
+  margin-top:0px;   
+}
+</style>
+<script>
+  function loadOrg(){
+    $.ajax({
+      type : "POST",
+      url : "../../reston/common/org/org.jjs",
+      success:function(data){
+        $('#org_tree').tree("loadData", data);
+      }
+    });
+  }
+  $(function() {
+    $('#org_tree').tree({
+      url : '../../reston/common/org/org.jjs',
+      onContextMenu : function(e, node) {
+        e.preventDefault();
+        // 查找节点
+        $('#org_tree').tree('select', node.target);
+        // 显示快捷菜单
+        $('#list_contextmenu').menu('show', {
+          left : e.pageX,
+          top : e.pageY
+        });
+        var itemEl_1 = $('#list_contextmenu').menu('findItem', '编辑');  // 获取菜单项
+        var itemEl_2 = $('#list_contextmenu').menu('findItem', '移除');  // 获取菜单项
+        if(node.id=='A0000'){
+          $('#list_contextmenu').menu('disableItem', itemEl_1.target);
+          $('#list_contextmenu').menu('disableItem', itemEl_2.target);
+        }else{
+          $('#list_contextmenu').menu('enableItem', itemEl_1.target);
+          $('#list_contextmenu').menu('enableItem', itemEl_2.target);
+        }
+      },
+      onAfterEdit : function(node) {
+        if(node.id=="NONE"&&node.text==""){
+          $('#org_tree').tree('remove', node.target);
+          return;
+        }
+        $.ajax({
+          type : "POST",
+          url : "../../../reston/common/org/org_update.jjs",
+          data : {
+            id : node.id,
+            name : node.text,
+            pid:node.pid,
+            level:node.level
+          },
+          complete:function(){
+            loadOrg();
+          }
+        });
+      }
+    });
+  });
+  function org_add() {
+    var node = $('#org_tree').tree('getSelected');
+    console.log(node);
+    $('#org_tree').tree('append', {
+      parent : node.target,
+      data : [ {
+        id : "NONE",
+        text : "",
+        pid : node.id,
+        level:(node.level+1)
+      } ]
+    });
+    var nid=$('#org_tree').tree('find', "NONE");
+    $('#org_tree').tree('beginEdit', nid.target);
+  }
+  function org_update() {
+    var node = $('#org_tree').tree('getSelected');
+    $('#org_tree').tree('beginEdit', node.target);
+  }
+  function org_remove() {
+    var node = $('#org_tree').tree('getSelected');
+    if(node.children&&(node.children.length>0)){$.messager.alert("警告","请先删除子机构");return;}
+    if(!confirm("确定要删除组织机构：\""+node.text+" \"么？"))return;
+    $.ajax({
+      type : "POST",
+      url : "../../../reston/common/org/org_remove.jjs",
+      data : {
+        id : node.id
+      },
+      complete:function(){
+        loadOrg();
+      }
+    });
+  }
+</script>
+</head>
+<body class="easyui-layout" data-options="fit:true">
+  <div data-options="region:'center',title:'组织机构',border:false">
+    <ul id="org_tree" style="margin:10px;"></ul>
+  </div>
+  <div id="list_contextmenu" class="easyui-menu" style="width: 120px;">
+    <div onclick="org_add()"  data-options="iconCls:'icon-add',auth:{authid:'o_o_addorg',type:'disable'}">追加</div>
+    <div id="updateBtn" onclick="org_update()"  data-options="iconCls:'icon-edit',auth:{authid:'o_o_updorg',type:'disable'}">编辑</div>
+    <div id="removeBtn" onclick="org_remove()"  data-options="iconCls:'icon-remove',auth:{authid:'o_o_delorg',type:'disable'}">移除</div>
+  </div>
+</body>
+</html>

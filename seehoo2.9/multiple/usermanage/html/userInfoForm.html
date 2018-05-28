@@ -1,0 +1,52 @@
+          <form id="userinfo" class="forminput">
+            <table>
+              <tr>
+                <td align="right">用户ID：</td>
+                <td><input id="ALOGINID" name="ALOGINID" class="easyui-textbox" validType="aloginid" style="background:#eee;" data-options="editable:false,required:true"></input></td>
+                <td align="right">电话：</td>
+                <td><input name="ATEL" class="easyui-textbox" validType="phone" data-options="required:true"></input></td>
+              </tr>
+              <tr>
+                <td align="right">姓名：</td>
+                <td><input name="ANAME" class="easyui-textbox" validType="username" data-options="required:true"></input></td>
+                <td align="right">性别：</td>
+                <td><input class="easyui-combobox" name="ASEX" data-options="panelHeight:'auto',panelMaxHeight:120,dict:'aSex',editable:false,required:true" /></input></td>
+              </tr>
+              <tr>
+                <td align="right">注册类型：</td>
+                <td><input id="AUSERTYPE" class="easyui-combobox" name="AUSERTYPE" data-options="panelHeight:'auto',panelMaxHeight:120,dict:'aUserType',readonly:true,editable:false,required:true" /></input></td>
+              </tr>
+              <tr>
+                <td align="right">角色：</td>
+                <td colspan="3"><select id="role" class="easyui-combobox" name="role" data-options="panelHeight:'auto',panelMaxHeight:120,editable:false,required:true" style="width: 92%; height: 50px">
+                </select></td>
+              </tr>              
+              <tr>
+                <td align="right">地址：</td>
+                <td colspan="3"><input name="ALOCALADDRESS" class="easyui-textbox" validType="maxLength[80]" style="width:95%;" data-options="required:true" /></td>
+              </tr>
+            </table>
+            <div style="margin-top:10px;text-align:center;">
+              <a id="resetPassBtn" class="easyui-linkbutton"  style="margin-right:30px;width:90px" data-options="iconCls:'icon-redo',auth:{authid:'o_u_resetPassword',type:'disable'}" onClick="resetPass()">重置密码</a>
+              <a class="easyui-linkbutton"  style="margin-right:30px;width:60px" data-options="iconCls:'icon-save',auth:{authid:'o_u_save',type:'disable'}" onClick="save()">保存</a>
+              <a class="easyui-linkbutton"  style="width:60px" data-options="iconCls:'icon-clear',auth:{authid:'o_u_cancle',type:'disable'}" onClick="closeDia()">取消</a>
+            </div>
+          </form>
+<script>
+	$('#role').combobox({
+	  valueField:'id',
+	  textField:'text',
+	  //multiple:true,
+	  //multiline:true,
+	  editable:false,
+	  url:RESTon.rootPath('/reston/auth/role_list.jjs'),
+	  loadFilter: function(data){
+	    var arr=[];
+	    $.each(data,function(i,item){
+	      if(item.text!='开发人员' && item.text!='超级用户')
+	        arr.push(item);
+	    });
+	    return arr;
+	  }
+	});
+</script>

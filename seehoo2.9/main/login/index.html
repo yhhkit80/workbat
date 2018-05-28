@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+  <title>登陆</title>
+  <link href="../css/login.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="../../RESTon.js" djConfig="parseOnLoad:true"></script>
+</head>
+<body>
+<form name="loginForm">
+  <div class="login-wrap">
+    <div class="inner">
+      <div class="header">
+        <h1 class="logo"><a href="javascript:;"><img src="../images/logo.png"></a></h1>
+      </div>
+        <div class="body">
+            <div class="main">
+              <div class="login-frame">
+                <div class="login-frame-inner">
+                  <h3 class="title">用户登录</h3>
+                    <div id="formTip" class="tip" style="display:none;"><b></b><span id="formTipText"></span></div>  
+                  <dl>
+                    <dd>
+                      <label for="loginname"  class="icon icon-user-login"></label>
+                      <input id="userName" name="userName" type="text" placeholder="请输入用户名" autocomplete="off">
+                    </dd>
+                    <dd>
+                      <label class="icon icon-pass-login"></label>
+                      <input id="passWord" name="passWord" type="password" placeholder="请输入密码">
+                    </dd>
+                     <dd class="valide_code_dd">
+                      <input id="textCode" name="textCode" type="text" placeholder="请输入图片验证码">
+                        <div class="code" style="display:inline;">
+                            <a href="javascript:changeImg();"><img id="imgCode" width="90" src="../images/img_code.png" /></a>
+                        </div>
+                    </dd>  
+                    <dd class="submit"><button id="btn_Login" onclick="submitForm()" class="primary-btn" type="button">提&nbsp;&nbsp;&nbsp;交</button></dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+        </div>
+        <div class="touzishang">
+          <!--<img src="../images/touzishang.png">-->
+        </div>
+     </div>
+  </div>
+ </form> 
+ 
+<script>
+$(function(){
+  changeImg();
+  $('#textCode').keydown(function(event){
+    event=event||window.event;
+    if(event.keyCode==13){
+      submitForm();
+    };
+  });
+});
+var ctx=RESTon.at("RESTon");
+// 提交并验证登陆表单
+function submitForm(){
+  var loginData = {
+    userName: $('#userName').val(),
+    passWord: $('#passWord').val(),
+    textCode: $('#textCode').val()
+  }
+  var tipText = '';
+  if(!loginData.userName){
+    tipText = "用户名不能为空！";
+    $('#userName').focus();
+  }else if(!loginData.passWord){
+    tipText = "密码不能为空！";
+    $('#passWord').focus();
+  }else if(!loginData.textCode){
+    tipText = "图形验证码不能为空！";
+    $('#textCode').focus();
+  }
+  if(tipText){
+    $('#formTipText').text(tipText).parent('#formTip').show();
+    return;
+  }
+  $('#formTip').hide();
+  //发送登陆请求
+  $.ajax({
+    type : 'get',
+    url : '../../data/login.json',
+    data : loginData,
+    cache : false,
+    dataType : 'json',
+    success : function(data) {
+      console.log(data)
+      if(data.userName == loginData.userName 
+          && data.passWord == loginData.passWord 
+          && data.textCode == loginData.textCode) {
+        data.result = 'success';
+        RESTon.set("User", data.userName);
+        alert("登录成功，进入后台管理界面！");
+        location.href = '../index/index.html';
+      }else{
+        alert("登录失败：用户名或密码错误，请重新输入！");
+        resetForm();
+      }
+    },
+    error : function(xhr, status, msg) {
+      alert("服务器出错，请联系管理员！");
+    }
+  });
+}
+//重置表单
+function resetForm(){
+  $('#userName, #passWord, #textCode').val('');
+  $('#userName').focus();
+  changeImg();
+}
+//获取图片验证码
+function changeImg() {
+  var timestamp = (new Date()).valueOf();
+  src = $('#imgCode').attr('src', "../images/img_code.png?timestamp="+timestamp);
+}
+</script>
+</body>
+</html>
